@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>팀 자산 관리 시스템</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+:root{
+  --bg:#f5f5f7;--surface:#fff;--border:#e4e4e8;
+  --text:#1a1a1a;--muted:#888;--subtle:#f2f2f4;
+  --blue:#1a73e8;--green:#188038;--orange:#e37400;--red:#d32f2f;--purple:#6200ea;
+  --blue-bg:#e8f0fe;--green-bg:#e6f4ea;--orange-bg:#fef3e2;--red-bg:#fce8e6;--purple-bg:#ede7f6;
+  --r:12px;--rs:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;position:sticky;top:0;z-index:100}
+.logo-icon{width:34px;height:34px;background:var(--blue);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-icon svg{width:18px;height:18px;fill:#fff}
+.logo-text{font-size:15px;font-weight:700}
+.logo-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.hact{display:flex;gap:8px}
+
+.tabs{background:var(--surface);border-bottom:1px solid var(--border);display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch;position:sticky;top:61px;z-index:99}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:11px 14px;font-size:13px;border:none;background:transparent;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;white-space:nowrap;font-family:inherit;font-weight:500;transition:all .15s}
+.tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+.tab:hover:not(.active){color:var(--text);background:var(--subtle)}
+.tab-sep{width:1px;background:var(--border);margin:8px 4px;flex-shrink:0}
+.tab-group-label{padding:12px 8px 12px 12px;font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.6px;white-space:nowrap;align-self:center}
+
+.container{max-width:1500px;margin:0 auto;padding:18px 16px}
+.pane{display:none}.pane.active{display:block}
+
+.btn{padding:7px 14px;border-radius:var(--rs);border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:13px;font-family:inherit;color:var(--text);font-weight:500;display:inline-flex;align-items:center;gap:6px;transition:all .15s;white-space:nowrap}
+.btn:hover{background:var(--subtle)}.btn:disabled{opacity:.5;cursor:default}
+.btn-primary{background:var(--blue);color:#fff;border-color:var(--blue)}.btn-primary:hover{background:#1557b0}
+.btn-green{background:var(--green);color:#fff;border-color:var(--green)}.btn-green:hover{background:#0d6b2d}
+.btn-red{background:var(--red);color:#fff;border-color:var(--red)}.btn-red:hover{background:#b71c1c}
+.btn-sm{padding:3px 9px;font-size:11px;border-radius:6px}
+.btn-del{color:var(--red);border-color:#ffcdd2;background:transparent}.btn-del:hover{background:var(--red-bg)}
+.btn-icon{padding:7px 10px;min-width:36px;justify-content:center}
+
+/* Dashboard */
+.dash-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.widget-settings{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px 20px;margin-bottom:16px;display:none}
+.widget-settings.open{display:block}
+.ws-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-top:10px}
+.ws-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--rs);cursor:pointer;transition:all .15s;user-select:none}
+.ws-item:hover{background:var(--subtle)}.ws-item.active{border-color:var(--blue);background:var(--blue-bg)}
+.ws-item.active .ws-check{background:var(--blue);border-color:var(--blue);color:#fff}
+.ws-check{width:18px;height:18px;border-radius:4px;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;font-weight:700;transition:all .15s}
+.ws-label{font-size:12px;font-weight:500;color:var(--text)}.ws-desc{font-size:11px;color:var(--muted);margin-top:1px}
+
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px}
+.kpi{background:var(--surface);border-radius:var(--r);padding:16px 18px;border:1px solid var(--border);position:relative;overflow:hidden}
+.kpi-bar{position:absolute;left:0;top:0;bottom:0;width:4px}
+.kpi-label{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.4px;margin-bottom:7px}
+.kpi-val{font-size:28px;font-weight:700;line-height:1}
+.kpi-unit{font-size:13px;font-weight:400;color:var(--muted);margin-left:2px}
+.kpi-sub{font-size:11px;color:var(--muted);margin-top:5px}
+.kpi.blue .kpi-bar{background:var(--blue)}.kpi.green .kpi-bar{background:var(--green)}
+.kpi.orange .kpi-bar{background:var(--orange)}.kpi.red .kpi-bar{background:var(--red)}.kpi.purple .kpi-bar{background:var(--purple)}
+
+.widget{background:var(--surface);border-radius:var(--r);border:1px solid var(--border);padding:18px 20px}
+.wtitle{font-size:13px;font-weight:700;margin-bottom:3px}
+.wsub{font-size:11px;color:var(--muted);margin-bottom:12px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-bottom:12px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px;margin-bottom:12px}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.leg-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted)}
+.cat-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.cat-row:last-child{border-bottom:none;padding-bottom:0}
+.tl-item{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)}
+.tl-item:last-child{border-bottom:none;padding-bottom:0}
+.trend-table{width:100%;border-collapse:collapse;font-size:12px}
+.trend-table th{padding:8px 12px;text-align:left;font-weight:700;font-size:11px;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap;background:var(--subtle)}
+.trend-table td{padding:8px 12px;border-bottom:1px solid var(--border);white-space:nowrap}
+.trend-table tr:last-child td{border-bottom:none}
+.trend-diff.up{color:var(--orange);font-weight:500}.trend-diff.dn{color:var(--green);font-weight:500}.trend-diff.eq{color:var(--muted)}
+
+/* ── 범용 리사이즈 테이블 ── */
+.card{background:var(--surface);border-radius:var(--r);border:1px solid var(--border);overflow:hidden;margin-bottom:12px}
+.toolbar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
+.search{padding:7px 11px;border:1px solid var(--border);border-radius:var(--rs);font-size:13px;font-family:inherit;background:var(--surface);color:var(--text);width:180px}
+.search:focus{outline:none;border-color:var(--blue)}
+select.fil{padding:7px 11px;border:1px solid var(--border);border-radius:var(--rs);font-size:13px;font-family:inherit;background:var(--surface);color:var(--text);cursor:pointer}
+
+.resize-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;position:relative}
+.rtable{border-collapse:collapse;font-size:12px;table-layout:fixed;width:100%}
+.rtable th{padding:0;text-align:left;font-weight:700;font-size:11px;color:var(--muted);border-bottom:1px solid var(--border);background:var(--subtle);position:relative;overflow:visible;user-select:none}
+.rtable th .thi{display:block;padding:9px 22px 9px 12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rtable td{padding:9px 12px;border-bottom:1px solid var(--border);color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;max-width:0}
+.rtable td.r{text-align:right;font-variant-numeric:tabular-nums}
+.rtable td.c{text-align:center}
+.rtable tr:last-child td{border-bottom:none}
+.rtable tr:hover:not(.sum-row) td{background:#f0f4ff}
+.rtable tfoot tr td{background:#f0f4fb;font-weight:700;font-size:11px;color:var(--blue);border-top:2px solid var(--blue);border-bottom:none;cursor:default;white-space:nowrap;max-width:0;overflow:hidden;text-overflow:ellipsis}
+.rtable tfoot tr td.r{text-align:right}.rtable tfoot tr td.c{text-align:center}
+.rtable tfoot tr td.sum-label{color:var(--muted);background:#e8f0fe}
+.sum-badge{background:#e8f0fe;color:#1a73e8;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:600}
+
+input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:var(--blue)}
+.chk-col{width:36px!important;min-width:36px;text-align:center!important;cursor:default!important;max-width:none!important}
+
+.col-resizer{position:absolute;right:-3px;top:0;bottom:0;width:9px;cursor:col-resize;background:transparent;z-index:10;touch-action:none}
+.col-resizer::after{content:'';position:absolute;right:4px;top:20%;bottom:20%;width:2px;background:var(--border);border-radius:1px}
+.col-resizer:hover::after,.col-resizer.drag::after{background:var(--blue)}
+
+/* ── 새 대시보드 ── */
+.dash-section{margin-bottom:24px}
+.dash-section-title{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:15px;font-weight:700;color:var(--text)}
+.dash-section-sub{font-size:12px;font-weight:400;color:var(--muted)}
+
+/* 월 비용 합계 카드 */
+.cost-total-card{background:linear-gradient(135deg,#1a73e8,#6200ea);border-radius:var(--r);padding:20px 24px;margin-bottom:12px;color:#fff;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.cost-total-label{font-size:13px;font-weight:600;opacity:.85;margin-bottom:4px}
+.cost-total-val{font-size:36px;font-weight:800;line-height:1}
+.cost-total-unit{font-size:16px;font-weight:400;opacity:.8;margin-left:4px}
+.cost-total-sub{font-size:12px;opacity:.7;margin-top:4px}
+.cost-total-badges{display:flex;gap:8px;flex-wrap:wrap}
+.cost-total-badge{background:rgba(255,255,255,.18);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600}
+
+/* 항목별 월비용 카드 */
+.cost-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:4px}
+.cost-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;position:relative;overflow:hidden;transition:box-shadow .15s}
+.cost-item:hover{box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.cost-item-bar{position:absolute;left:0;top:0;bottom:0;width:4px}
+.cost-item-label{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;letter-spacing:.3px}
+.cost-item-val{font-size:22px;font-weight:700;line-height:1;color:var(--text)}
+.cost-item-unit{font-size:12px;color:var(--muted);margin-left:2px}
+.cost-item-sub{font-size:11px;color:var(--muted);margin-top:4px}
+
+/* 항목별 요약 카드 */
+.summary-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);margin-bottom:12px;overflow:hidden}
+.sc-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px}
+.sc-title{font-size:14px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px}
+.sc-title-bar{width:4px;height:18px;border-radius:2px;flex-shrink:0}
+.sc-stats{display:flex;gap:16px;flex-wrap:wrap}
+.sc-stat{text-align:center}
+.sc-stat-val{font-size:20px;font-weight:700;line-height:1}
+.sc-stat-label{font-size:10px;color:var(--muted);margin-top:2px}
+.sc-body{padding:14px 18px}
+.sc-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)}
+.sc-row:last-child{border-bottom:none;padding-bottom:0}
+.sc-row-label{font-size:12px;color:var(--muted);min-width:80px}
+.sc-row-val{font-size:13px;font-weight:600;color:var(--text)}
+.sc-row-bar-wrap{flex:1;margin:0 12px;background:var(--subtle);border-radius:3px;height:6px;overflow:hidden}
+.sc-row-bar-fill{height:100%;border-radius:3px;transition:width .4s}
+
+/* 만료임박 알림 */
+.expiry-chip{display:inline-flex;align-items:center;gap:5px;background:var(--red-bg);color:var(--red);border-radius:6px;padding:3px 8px;font-size:11px;font-weight:600;margin-top:8px;flex-wrap:wrap}
+.expiry-chip.warn{background:var(--orange-bg);color:var(--orange)}
+
+@media(max-width:640px){
+  .cost-total-val{font-size:28px}
+  .cost-grid{grid-template-columns:repeat(2,1fr)}
+  .sc-stats{gap:10px}
+}
+  .logo-sub{display:none}
+  header{padding:10px 12px}
+  .hact .btn:not(.btn-primary){display:none}
+  .container{padding:10px 8px}
+  .toolbar{gap:5px}
+  .search{width:120px;font-size:12px}
+  select.fil{font-size:12px;padding:6px 8px}
+  .kpi-row{grid-template-columns:repeat(2,1fr)}
+  .kpi{padding:12px 12px}.kpi-val{font-size:22px}
+  .grid2,.grid3{grid-template-columns:1fr}
+  .tab{padding:10px 10px;font-size:11px}
+  .tab-group-label{font-size:9px;padding:10px 4px}
+  .info-bar{gap:6px}
+  .info-chip{font-size:11px;padding:4px 9px}
+  .rtable{font-size:11px}
+  .rtable th .thi{padding:7px 18px 7px 9px}
+  .rtable td{padding:7px 9px}
+}
+
+.badge{display:inline-block;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:600;white-space:nowrap}
+.ok{background:var(--green-bg);color:var(--green)}.warn{background:var(--orange-bg);color:var(--orange)}.danger{background:var(--red-bg);color:var(--red)}.info{background:var(--blue-bg);color:var(--blue)}.gray{background:var(--subtle);color:#555}.purple-b{background:var(--purple-bg);color:var(--purple)}
+
+/* info bar (세부현황 상단 요약) */
+.info-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.info-chip{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:5px 14px;font-size:12px;color:var(--text);font-weight:500;display:inline-flex;align-items:center;gap:5px}
+.info-chip span{color:var(--blue);font-weight:700}
+
+/* Modal */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.48);z-index:200;align-items:flex-end;justify-content:center}
+.overlay.open{display:flex}
+@media(min-width:640px){.overlay{align-items:center}}
+.modal{background:var(--surface);border-radius:16px 16px 0 0;padding:22px;width:100%;max-width:700px;max-height:92vh;overflow-y:auto}
+@media(min-width:640px){.modal{border-radius:16px;max-height:86vh}}
+.mhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.mtitle{font-size:16px;font-weight:700}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
+.fg label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px;font-weight:600}
+.fg input,.fg select,.fg textarea{width:100%;padding:8px 11px;border:1px solid var(--border);border-radius:var(--rs);font-size:13px;font-family:inherit;background:var(--surface);color:var(--text)}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--blue)}
+.fg input.err,.fg select.err{border-color:var(--red)}
+.fg.full{grid-column:1/-1}
+.mfooter{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)}
+
+/* 세부내역 팝업 */
+.detail-grid{border:1px solid var(--border);border-radius:var(--rs);overflow:hidden}
+.detail-row{display:flex;border-bottom:1px solid var(--border)}
+.detail-row:last-child{border-bottom:none}
+.d-label{font-size:11px;font-weight:700;color:var(--muted);background:var(--subtle);padding:10px 12px;min-width:130px;flex-shrink:0;display:flex;align-items:flex-start;border-right:1px solid var(--border)}
+.d-val{font-size:13px;color:var(--text);padding:10px 12px;flex:1;word-break:break-all;white-space:pre-wrap;line-height:1.6}
+.d-val.hl{color:#0c6c9a;font-weight:600}
+
+/* Upload */
+.drop-zone{border:2px dashed var(--border);border-radius:var(--r);padding:28px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:14px}
+.drop-zone:hover,.drop-zone.drag{border-color:var(--blue);background:var(--blue-bg)}
+.drop-zone svg{width:32px;height:32px;fill:var(--muted);margin-bottom:8px}
+.drop-zone p{font-size:13px;color:var(--muted)}
+.upload-info{background:var(--blue-bg);border-radius:var(--rs);padding:12px 14px;font-size:12px;color:var(--blue);margin-bottom:12px;line-height:1.8}
+.preview-wrap{max-height:240px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--rs);margin-bottom:12px}
+.preview-wrap table th{position:sticky;top:0}
+
+/* 로그인 화면 */
+.login-screen{display:none;position:fixed;inset:0;background:var(--bg);z-index:600;align-items:center;justify-content:center}
+.login-screen.show{display:flex}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:36px 32px;width:100%;max-width:380px;box-shadow:0 4px 24px rgba(0,0,0,.08)}
+.login-logo{display:flex;align-items:center;gap:10px;margin-bottom:28px}
+.login-logo-icon{width:40px;height:40px;background:var(--blue);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.login-logo-icon svg{width:22px;height:22px;fill:#fff}
+.login-title{font-size:16px;font-weight:700;color:var(--text)}
+.login-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.login-field{margin-bottom:14px}
+.login-field label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:5px}
+.login-field input{width:100%;padding:11px 13px;border:1px solid var(--border);border-radius:var(--rs);font-size:14px;font-family:inherit;background:var(--surface);color:var(--text);transition:border .15s}
+.login-field input:focus{outline:none;border-color:var(--blue)}
+.login-field input.err{border-color:var(--red)}
+.login-btn{width:100%;padding:12px;background:var(--blue);color:#fff;border:none;border-radius:var(--rs);font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;margin-top:6px;transition:background .15s}
+.login-btn:hover{background:#1557b0}
+.login-btn:disabled{opacity:.6;cursor:default}
+.login-err{font-size:12px;color:var(--red);margin-top:10px;text-align:center;min-height:18px}
+.login-sep{border:none;border-top:1px solid var(--border);margin:20px 0}
+.login-reg{text-align:center;font-size:12px;color:var(--muted)}
+.login-reg a{color:var(--blue);cursor:pointer;text-decoration:none;font-weight:500}
+/* 회원가입 화면 (같은 카드 재사용) */
+.reg-card{display:none}.reg-card.show{display:block}
+.login-form{display:block}.login-form.hide{display:none}
+/* 헤더 유저 */
+.user-badge{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.user-avatar{width:28px;height:28px;border-radius:50%;background:var(--blue-bg);color:var(--blue);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.signout-btn{padding:5px 10px;border:1px solid var(--border);border-radius:6px;background:transparent;cursor:pointer;font-size:11px;font-family:inherit;color:var(--muted)}
+.signout-btn:hover{background:var(--subtle)}
+.toast.show{opacity:1;transform:translateY(0)}.toast.err{background:var(--red)}.toast.ok{background:var(--green)}
+.loading-wrap{display:none;position:fixed;inset:0;background:rgba(255,255,255,.87);z-index:500;align-items:center;justify-content:center;flex-direction:column;gap:12px}
+.loading-wrap.show{display:flex}
+.spinner{width:34px;height:34px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ltxt{font-size:13px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="loading-wrap" id="loading"><div class="spinner"></div><div class="ltxt" id="ltxt">불러오는 중...</div></div>
+<div class="toast" id="toast"></div>
+
+<!-- 로그인 화면 -->
+<div class="login-screen show" id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon"><svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg></div>
+      <div><div class="login-title">팀 자산 관리 시스템</div><div class="login-sub">계속하려면 로그인하세요</div></div>
+    </div>
+
+    <!-- 로그인 폼 -->
+    <div id="login-form">
+      <div class="login-field"><label>이메일</label><input type="email" id="li-email" placeholder="example@company.com" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <div class="login-field"><label>비밀번호</label><input type="password" id="li-pw" placeholder="비밀번호 입력" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <button class="login-btn" id="li-btn" onclick="doLogin()">로그인</button>
+      <div class="login-err" id="li-err"></div>
+      <hr class="login-sep">
+      <div class="login-reg">계정이 없으신가요? <a onclick="showReg()">회원가입</a></div>
+    </div>
+
+    <!-- 회원가입 폼 -->
+    <div id="reg-form" style="display:none">
+      <div class="login-field"><label>이름</label><input type="text" id="reg-name" placeholder="홍길동"></div>
+      <div class="login-field"><label>이메일</label><input type="email" id="reg-email" placeholder="example@company.com"></div>
+      <div class="login-field"><label>비밀번호 <span style="font-weight:400;color:var(--muted)">(6자 이상)</span></label><input type="password" id="reg-pw" placeholder="비밀번호 설정"></div>
+      <div class="login-field"><label>비밀번호 확인</label><input type="password" id="reg-pw2" placeholder="비밀번호 재입력" onkeydown="if(event.key==='Enter')doReg()"></div>
+      <button class="login-btn" id="reg-btn" onclick="doReg()">가입하기</button>
+      <div class="login-err" id="reg-err"></div>
+      <hr class="login-sep">
+      <div class="login-reg">이미 계정이 있으신가요? <a onclick="showLogin()">로그인</a></div>
+    </div>
+  </div>
+</div>
+
+<header>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg></div>
+    <div><div class="logo-text">팀 자산 관리 시스템</div><div class="logo-sub">임대차 · 보험 · 차량 · OA렌탈 · 기타렌탈 · 세부현황</div></div>
+  </div>
+  <div class="hact">
+    <div class="user-badge">
+      <div class="user-avatar" id="user-avatar">?</div>
+      <span id="user-email" style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+      <button class="signout-btn" onclick="doSignout()">로그아웃</button>
+    </div>
+    <button class="btn" onclick="doExport()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>전체 내보내기
+    </button>
+    <button class="btn btn-primary" onclick="openAdd()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>항목 추가
+    </button>
+  </div>
+</header>
+
+<div class="tabs" id="main-tabs">
+  <button class="tab active" data-tab="dash" onclick="sw(this)">대시보드</button>
+  <button class="tab" data-tab="lease" onclick="sw(this)">임대차</button>
+  <button class="tab" data-tab="ins" onclick="sw(this)">보험계약</button>
+  <button class="tab" data-tab="veh" onclick="sw(this)">차량</button>
+  <button class="tab" data-tab="oa" onclick="sw(this)">OA렌탈</button>
+  <button class="tab" data-tab="other" onclick="sw(this)">기타렌탈</button>
+  <div class="tab-sep"></div>
+  <div class="tab-group-label">세부현황</div>
+  <button class="tab" data-tab="dveh" onclick="sw(this)">차량 세부</button>
+  <button class="tab" data-tab="dpc" onclick="sw(this)">업무용PC</button>
+  <button class="tab" data-tab="dprinter" onclick="sw(this)">복합기</button>
+  <button class="tab" data-tab="dplotter" onclick="sw(this)">플로터</button>
+</div>
+
+<div class="container">
+
+<!-- ===== 대시보드 ===== -->
+<div id="pane-dash" class="pane active">
+  <div style="font-size:16px;font-weight:700;margin-bottom:16px">대시보드</div>
+
+  <!-- ① 월 비용 한눈에 보기 -->
+  <div class="dash-section">
+    <div class="dash-section-title">
+      <span>💰 월 비용 현황</span>
+      <span class="dash-section-sub">전체 항목 합산</span>
+    </div>
+    <div class="cost-total-card" id="cost-total-card"></div>
+    <div class="cost-grid" id="cost-grid"></div>
+  </div>
+
+  <!-- ② 항목별 요약 -->
+  <div class="dash-section">
+    <div class="dash-section-title">
+      <span>📋 항목별 요약</span>
+      <span class="dash-section-sub">건수 · 비용 · 만료현황 · 구분별 현황</span>
+    </div>
+    <div id="summary-lease" class="summary-card"></div>
+    <div id="summary-ins" class="summary-card"></div>
+    <div id="summary-veh" class="summary-card"></div>
+    <div id="summary-oa" class="summary-card"></div>
+    <div id="summary-other" class="summary-card"></div>
+  </div>
+</div>
+
+<!-- ===== 관리 메뉴들 ===== -->
+<div id="pane-lease" class="pane">
+  <div class="toolbar">
+    <input class="search" id="s-lease" placeholder="검색..." oninput="renderT('lease')">
+    <select class="fil" id="f-lease-cat" onchange="renderT('lease')">
+      <option value="">전체 구분</option>
+      <option>본사</option><option>강북영업본부</option><option>강남영업본부</option><option>강서영업본부</option><option>동부영업본부</option><option>서부영업본부</option><option>영업센터</option><option>물류센터</option><option>사택</option>
+    </select>
+    <select class="fil" id="f-lease-ym" onchange="renderT('lease')"><option value="">전체 기준월</option></select>
+    <button class="btn btn-red" id="del-btn-lease" style="display:none" onclick="bulkDel('lease')">선택 삭제 (0)</button>
+    <button class="btn btn-green" onclick="openUpload('lease')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>엑셀 업로드</button>
+    <button class="btn" onclick="dlTpl('lease')">서식 다운로드</button>
+  </div>
+  <div class="card"><div class="resize-wrap"><table class="rtable" id="t-lease"></table></div></div>
+</div>
+
+<div id="pane-ins" class="pane">
+  <div class="toolbar">
+    <input class="search" id="s-ins" placeholder="검색..." oninput="renderT('ins')">
+    <select class="fil" id="f-ins-ym" onchange="renderT('ins')"><option value="">전체 기준월</option></select>
+    <button class="btn btn-red" id="del-btn-ins" style="display:none" onclick="bulkDel('ins')">선택 삭제 (0)</button>
+    <button class="btn btn-green" onclick="openUpload('ins')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>엑셀 업로드</button>
+    <button class="btn" onclick="dlTpl('ins')">서식 다운로드</button>
+  </div>
+  <div class="card"><div class="resize-wrap"><table class="rtable" id="t-ins"></table></div></div>
+</div>
+
+<div id="pane-veh" class="pane">
+  <div class="toolbar">
+    <input class="search" id="s-veh" placeholder="검색..." oninput="renderT('veh')">
+    <select class="fil" id="f-veh-cat" onchange="renderT('veh')">
+      <option value="">전체 구분</option><option>임원용</option><option>본사공용</option><option>본부및지사</option><option>도매센터</option><option>법인센터</option><option>프론티어</option>
+    </select>
+    <select class="fil" id="f-veh-ym" onchange="renderT('veh')"><option value="">전체 기준월</option></select>
+    <button class="btn btn-red" id="del-btn-veh" style="display:none" onclick="bulkDel('veh')">선택 삭제 (0)</button>
+    <button class="btn btn-green" onclick="openUpload('veh')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>엑셀 업로드</button>
+    <button class="btn" onclick="dlTpl('veh')">서식 다운로드</button>
+  </div>
+  <div class="card"><div class="resize-wrap"><table class="rtable" id="t-veh"></table></div></div>
+</div>
+
+<div id="pane-oa" class="pane">
+  <div class="toolbar">
+    <input class="search" id="s-oa" placeholder="검색..." oninput="renderT('oa')">
+    <select class="fil" id="f-oa-ym" onchange="renderT('oa')"><option value="">전체 기준월</option></select>
+    <button class="btn btn-red" id="del-btn-oa" style="display:none" onclick="bulkDel('oa')">선택 삭제 (0)</button>
+    <button class="btn btn-green" onclick="openUpload('oa')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>엑셀 업로드</button>
+    <button class="btn" onclick="dlTpl('oa')">서식 다운로드</button>
+  </div>
+  <div class="card"><div class="resize-wrap"><table class="rtable" id="t-oa"></table></div></div>
+</div>
+
+<div id="pane-other" class="pane">
+  <div class="toolbar">
+    <input class="search" id="s-other" placeholder="검색..." oninput="renderT('other')">
+    <select class="fil" id="f-other-cat" onchange="renderT('other')">
+      <option value="">전체 구분</option><option>정수기</option><option>비데</option><option>공기청정기</option>
+    </select>
+    <select class="fil" id="f-other-ym" onchange="renderT('other')"><option value="">전체 기준월</option></select>
+    <button class="btn btn-red" id="del-btn-other" style="display:none" onclick="bulkDel('other')">선택 삭제 (0)</button>
+    <button class="btn btn-green" onclick="openUpload('other')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>엑셀 업로드</button>
+    <button class="btn" onclick="dlTpl('other')">서식 다운로드</button>
+  </div>
+  <div class="card"><div class="resize-wrap"><table class="rtable" id="t-other"></table></div></div>
+</div>
+
+<!-- ===== 세부현황 메뉴들 ===== -->
+<div id="pane-dveh" class="pane">
+  <div class="toolbar">
+    <input class="search" id="s-dveh" placeholder="검색..." oninput="renderDetail('dveh')">
+    <select class="fil" id="f-dveh-cat" onchange="renderDetail('dveh')">
+      <option value="">전체 구분</option><option>임원용</option><option>본사공용</option><option>본부 및 지사</option><option>도매센터</option><option>법인센터</option><option>프론티어</option>
+    </select>
+    <select class="fil" id="f-dveh-ym" onchange="renderDetail('dveh')"><option value="">전체 기준월</option></select>
+    <button class="btn btn-red" id="del-btn-dveh" style="display:none" onclick="bulkDelDetail('dveh')">선택 삭제 (0)</button>
+    <button class="btn btn-green" onclick="openUpload('dveh')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>엑셀 업로드</button>
+    <button class="btn" onclick="dlTpl('dveh')">서식 다운로드</button>
+  </div>
+  <div id="info-dveh" class="info-bar"></div>
+  <div class="card"><div class="resize-wrap"><table class="rtable" id="t-dveh"></table></div></div>
+</div>
+
+<div id="pane-dpc" class="pane">
+  <div class="toolbar">
+    <input class="search" id="s-dpc" placeholder="검색..." oninput="renderDetail('dpc')">
+    <select class="fil" id="f-dpc-item" onchange="renderDetail('dpc')">
+      <option value="">전체 품목</option><option>노트북</option><option>데스크탑</option><option>PC본체</option>
+    </select>
+    <select class="fil" id="f-dpc-ym" onchange="renderDetail('dpc')"><option value="">전체 기준월</option></select>
+    <button class="btn btn-red" id="del-btn-dpc" style="display:none" onclick="bulkDelDetail('dpc')">선택 삭제 (0)</button>
+    <button class="btn btn-green" onclick="openUpload('dpc')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>엑셀 업로드</button>
+    <button class="btn" onclick="dlTpl('dpc')">서식 다운로드</button>
+  </div>
+  <div id="info-dpc" class="info-bar"></div>
+  <div class="card"><div class="resize-wrap"><table class="rtable" id="t-dpc"></table></div></div>
+</div>
+
+<div id="pane-dprinter" class="pane">
+  <div class="toolbar">
+    <input class="search" id="s-dprinter" placeholder="검색..." oninput="renderDetail('dprinter')">
+    <select class="fil" id="f-dprinter-type" onchange="renderDetail('dprinter')">
+      <option value="">전체 유형</option><option>잉크젯</option><option>레이저</option>
+    </select>
+    <select class="fil" id="f-dprinter-ym" onchange="renderDetail('dprinter')"><option value="">전체 기준월</option></select>
+    <button class="btn btn-red" id="del-btn-dprinter" style="display:none" onclick="bulkDelDetail('dprinter')">선택 삭제 (0)</button>
+    <button class="btn btn-green" onclick="openUpload('dprinter')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>엑셀 업로드</button>
+    <button class="btn" onclick="dlTpl('dprinter')">서식 다운로드</button>
+  </div>
+  <div id="info-dprinter" class="info-bar"></div>
+  <div class="card"><div class="resize-wrap"><table class="rtable" id="t-dprinter"></table></div></div>
+</div>
+
+<div id="pane-dplotter" class="pane">
+  <div class="toolbar">
+    <input class="search" id="s-dplotter" placeholder="검색..." oninput="renderDetail('dplotter')">
+    <select class="fil" id="f-dplotter-ym" onchange="renderDetail('dplotter')"><option value="">전체 기준월</option></select>
+    <button class="btn btn-red" id="del-btn-dplotter" style="display:none" onclick="bulkDelDetail('dplotter')">선택 삭제 (0)</button>
+    <button class="btn btn-green" onclick="openUpload('dplotter')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>엑셀 업로드</button>
+    <button class="btn" onclick="dlTpl('dplotter')">서식 다운로드</button>
+  </div>
+  <div id="info-dplotter" class="info-bar"></div>
+  <div class="card"><div class="resize-wrap"><table class="rtable" id="t-dplotter"></table></div></div>
+</div>
+</div>
+
+<!-- 항목 추가 모달 -->
+<div class="overlay" id="add-modal" onclick="if(event.target===this)closeAdd()">
+  <div class="modal">
+    <div class="mhead"><div class="mtitle" id="add-title">항목 추가</div><button class="btn btn-sm" onclick="closeAdd()">✕</button></div>
+    <div style="margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border)">
+      <div class="fg" style="max-width:200px"><label>기준 월 *</label><input type="month" id="add-ym"></div>
+    </div>
+    <div class="mgrid" id="add-fields"></div>
+    <div class="mfooter"><button class="btn" onclick="closeAdd()">취소</button><button class="btn btn-primary" id="add-save" onclick="saveAdd()">저장</button></div>
+  </div>
+</div>
+
+<!-- 세부 내역 팝업 -->
+<div class="overlay" id="detail-modal" onclick="if(event.target===this)closeDetail()">
+  <div class="modal" style="max-width:640px">
+    <div class="mhead"><div class="mtitle" id="detail-title">세부 내역</div><button class="btn btn-sm" onclick="closeDetail()">✕</button></div>
+    <div id="detail-body"></div>
+    <div class="mfooter"><button class="btn" onclick="closeDetail()">닫기</button></div>
+  </div>
+</div>
+
+<!-- 업로드 모달 -->
+<div class="overlay" id="up-modal" onclick="if(event.target===this)closeUp()">
+  <div class="modal" style="max-width:800px">
+    <div class="mhead"><div class="mtitle" id="up-title">엑셀 업로드</div><button class="btn btn-sm" onclick="closeUp()">✕</button></div>
+    <div id="up-s1">
+      <div style="margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border);display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap">
+        <div class="fg" style="min-width:160px"><label>📅 기준 월 *</label><input type="month" id="up-ym"></div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6">월 마감 후 업데이트 시 해당 월을 선택하세요</div>
+      </div>
+      <div class="upload-info"><b>업로드 전 확인사항</b><br>· "서식 다운로드" 양식을 작성한 뒤 업로드하세요<br>· 1행(헤더)은 수정하지 마세요<br>· 날짜는 YYYY-MM-DD 형식 (예: 2025-12-31)</div>
+      <div class="drop-zone" id="drop-zone" onclick="document.getElementById('fi').click()"
+        ondragover="event.preventDefault();this.classList.add('drag')"
+        ondragleave="this.classList.remove('drag')"
+        ondrop="handleDrop(event)">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM12 17l-4-4h2.5v-4h3v4H16l-4 4z"/></svg>
+        <p>클릭하거나 파일을 드래그하세요</p>
+        <p style="margin-top:4px;font-size:12px"><b>.xlsx 또는 .xls</b> 파일만 지원</p>
+        <input type="file" id="fi" accept=".xlsx,.xls" style="display:none" onchange="handleFile(event)">
+      </div>
+    </div>
+    <div id="up-s2" style="display:none">
+      <div id="up-info" style="font-size:13px;color:var(--muted);margin-bottom:8px"></div>
+      <div class="preview-wrap"><table id="preview-tbl"></table></div>
+    </div>
+    <div class="mfooter">
+      <button class="btn" onclick="closeUp()">취소</button>
+      <button class="btn btn-sm" id="up-back" style="display:none" onclick="resetUp()">다시 선택</button>
+      <button class="btn btn-primary" id="up-confirm" style="display:none" onclick="confirmUp()">업로드 확인</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SURL='https://txyzpgcwtmfsilgkxldw.supabase.co';
+const SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR4eXpwZ2N3dG1mc2lsZ2t4bGR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4OTU2OTMsImV4cCI6MjA4OTQ3MTY5M30.E2164GxBbdQejPWSoF1HJi3gpvqRMhvgT9wYo9xe9Ao';
+
+// db는 페이지 로드 완료 후 초기화됨
+var db = null;
+
+window.addEventListener('load', function(){
+  db = window.supabase.createClient(SURL, SKEY);
+  db.auth.onAuthStateChange(function(event, session){
+    setUserUI(session ? session.user : null);
+    if(session && session.user){ loadAll(); }
+  });
+});
+
+function getDB(){ return db; }
+
+// ============================================================
+// 로그인 / 인증
+// ============================================================
+function showLogin(){
+  document.getElementById('login-form').style.display='block';
+  document.getElementById('reg-form').style.display='none';
+  document.getElementById('li-err').textContent='';
+}
+function showReg(){
+  document.getElementById('login-form').style.display='none';
+  document.getElementById('reg-form').style.display='block';
+  document.getElementById('reg-err').textContent='';
+}
+
+async function doLogin(){
+  const email=document.getElementById('li-email').value.trim();
+  const pw=document.getElementById('li-pw').value;
+  const errEl=document.getElementById('li-err');
+  const btn=document.getElementById('li-btn');
+  if(!email||!pw){errEl.textContent='이메일과 비밀번호를 입력해주세요.';return;}
+  if(!db){errEl.textContent='초기화 중입니다. 잠시 후 다시 시도해주세요.';return;}
+  btn.disabled=true;
+  btn.textContent='로그인 중...';
+  errEl.textContent='';
+  try{
+    const result=await db.auth.signInWithPassword({email:email,password:pw});
+    if(result.error){
+      let msg='로그인에 실패했습니다. ('+result.error.message+')';
+      if(result.error.message.includes('Invalid login')) msg='이메일 또는 비밀번호가 올바르지 않습니다.';
+      if(result.error.message.includes('Email not confirmed')) msg='이메일 인증이 필요합니다.';
+      errEl.textContent=msg;
+    }
+  }catch(e){
+    errEl.textContent='오류: '+e.message;
+  }
+  btn.disabled=false;
+  btn.textContent='로그인';
+}
+
+async function doReg(){
+  const name=document.getElementById('reg-name').value.trim();
+  const email=document.getElementById('reg-email').value.trim();
+  const pw=document.getElementById('reg-pw').value;
+  const pw2=document.getElementById('reg-pw2').value;
+  const errEl=document.getElementById('reg-err');
+  const btn=document.getElementById('reg-btn');
+  if(!email||!pw){errEl.textContent='이메일과 비밀번호를 입력해주세요.';return;}
+  if(pw.length<6){errEl.textContent='비밀번호는 6자 이상이어야 합니다.';return;}
+  if(pw!==pw2){errEl.textContent='비밀번호가 일치하지 않습니다.';return;}
+  btn.disabled=true;btn.textContent='가입 중...';errEl.textContent='';
+  const{error}=await db.auth.signUp({
+    email,password:pw,
+    options:{data:{full_name:name||email.split('@')[0]}}
+  });
+  if(error){
+    errEl.textContent=error.message.includes('already registered')?'이미 등록된 이메일입니다.':'가입에 실패했습니다: '+error.message;
+  } else {
+    errEl.style.color='var(--green)';
+    errEl.textContent='가입 완료! 이메일 인증 후 로그인하세요.';
+    setTimeout(showLogin,2500);
+  }
+  btn.disabled=false;btn.textContent='가입하기';
+}
+
+async function doSignout(){
+  await db.auth.signOut();
+}
+
+function setUserUI(user){
+  if(user){
+    const email=user.email||'';
+    const name=(user.user_metadata?.full_name||email.split('@')[0]||'?');
+    document.getElementById('user-avatar').textContent=name.charAt(0).toUpperCase();
+    document.getElementById('user-email').textContent=email;
+    document.getElementById('login-screen').classList.remove('show');
+  } else {
+    document.getElementById('login-screen').classList.add('show');
+  }
+}
+
+// Auth 상태 감지는 initAuth()에서 처리
+
+// DB 캐시
+const DB={
+  lease:[],insurance:[],vehicle:[],oa_rental:[],other_rental:[],
+  detail_vehicle:[],detail_pc:[],detail_printer:[],detail_plotter:[]
+};
+const TAB_TBL={
+  lease:'lease',ins:'insurance',veh:'vehicle',oa:'oa_rental',other:'other_rental',
+  dveh:'detail_vehicle',dpc:'detail_pc',dprinter:'detail_printer',dplotter:'detail_plotter'
+};
+const TAB_DB={
+  lease:'lease',ins:'insurance',veh:'vehicle',oa:'oa_rental',other:'other_rental',
+  dveh:'detail_vehicle',dpc:'detail_pc',dprinter:'detail_printer',dplotter:'detail_plotter'
+};
+
+let curTab='dash',addType='lease',upType='',upData=[];
+const charts={};
+let resizeState=null;
+function curYM(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;}
+
+// ============================================================
+// 위젯 설정
+// ============================================================
+const WIDGET_DEF=[
+  {id:'w-kpi',label:'KPI 요약 카드',desc:'전체건수·월지출·상태'},
+  {id:'w-status',label:'계약 상태 도넛',desc:'정상·임박·만료'},
+  {id:'w-veh',label:'차량 구분 도넛',desc:'6개 구분 보유대수'},
+  {id:'w-cost',label:'카테고리별 월 비용',desc:'막대 차트'},
+  {id:'w-lease-chart',label:'임대차 구분별 임차료',desc:'본부별 막대'},
+  {id:'w-summary',label:'카테고리 요약',desc:'건수·상태·만료예정'},
+  {id:'w-trend',label:'월별 추이',desc:'비용·건수 추이'},
+];
+const CHART_WS=['w-status','w-veh','w-cost','w-lease-chart'];
+function loadWS(){const s=localStorage.getItem('assetW8');return s?JSON.parse(s):WIDGET_DEF.map(w=>w.id);}
+function saveWS(l){localStorage.setItem('assetW8',JSON.stringify(l));}
+let visW=loadWS();
+function renderWSPanel(){
+  document.getElementById('ws-grid').innerHTML=WIDGET_DEF.map(w=>{const on=visW.includes(w.id);return `<div class="ws-item${on?' active':''}" onclick="toggleW('${w.id}')"><div class="ws-check">${on?'✓':''}</div><div><div class="ws-label">${w.label}</div><div class="ws-desc">${w.desc}</div></div></div>`;}).join('');
+}
+function toggleW(id){visW=visW.includes(id)?visW.filter(v=>v!==id):[...visW,id];saveWS(visW);applyWS();renderWSPanel();}
+function wsAll(){visW=WIDGET_DEF.map(w=>w.id);saveWS(visW);applyWS();renderWSPanel();}
+function wsNone(){visW=[];saveWS(visW);applyWS();renderWSPanel();}
+function applyWS(){
+  document.getElementById('w-kpi').style.display=visW.includes('w-kpi')?'block':'none';
+  CHART_WS.forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=visW.includes(id)?'':'none';});
+  document.getElementById('w-summary').style.display=visW.includes('w-summary')?'block':'none';
+  document.getElementById('w-trend').style.display=visW.includes('w-trend')?'block':'none';
+}
+function toggleWS(){
+  const p=document.getElementById('ws-panel');const btn=document.getElementById('ws-toggle-btn');
+  const o=p.classList.toggle('open');btn.style.background=o?'var(--blue-bg)':'';btn.style.color=o?'var(--blue)':'';
+  if(o)renderWSPanel();
+}
+
+// ============================================================
+// 스키마 정의
+// ============================================================
+const SCHEMAS={
+  lease:{label:'임대차',cols:[
+    {k:'cat',l:'구분',cat:1,w:80},{k:'org',l:'입주기관',w:180},{k:'address',l:'주소',w:200},{k:'headcount',l:'입주인원',w:70},
+    {k:'deposit',l:'보증금',num:1,w:110},{k:'rent',l:'임차료',num:1,w:110},{k:'maintenance',l:'관리비',w:90},{k:'_sum',l:'임차료+관리비',w:120},
+    {k:'lease_sqm',l:'임대평수',w:75},{k:'exclusive_sqm',l:'전용평수',w:75},{k:'rent_per_sqm',l:'평당단가',num:1,w:100},
+    {k:'conv_deposit',l:'환산보증금',num:1,w:120},{k:'conv_rent',l:'환산임대료',num:1,w:120},
+    {k:'start_date',l:'계약시작',w:95},{k:'end_date',l:'계약종료',w:95},
+    {k:'snapshot_ym',l:'기준월',w:75},{k:'mgr',l:'담당자',w:70},{k:'note',l:'비고',w:150},{k:'_st',l:'상태',w:65}
+  ],numCols:['deposit','rent','rent_per_sqm','conv_deposit','conv_rent']},
+  ins:{label:'보험계약',cols:[
+    {k:'ins_type',l:'보험종류',w:160},{k:'insurer',l:'보험사',w:180},
+    {k:'start_date',l:'계약시작',w:95},{k:'end_date',l:'계약종료',w:95},
+    {k:'amount',l:'보험료',num:1,w:120},{k:'coverage',l:'보상한도',w:80},{k:'target',l:'보험대상',w:200},{k:'details',l:'주요담보',w:240},
+    {k:'snapshot_ym',l:'기준월',w:75},{k:'mgr',l:'담당자',w:70},{k:'note',l:'비고',w:150},{k:'_st',l:'상태',w:65}
+  ],numCols:['amount']},
+  veh:{label:'차량',cols:[
+    {k:'cat',l:'구분',cat:1,w:90},{k:'org',l:'운영조직',w:120},{k:'contract_no',l:'계약번호',w:120},
+    {k:'car_no',l:'차량번호',w:100},{k:'car_type',l:'차종',w:200},{k:'monthly_fee',l:'월대여료',num:1,w:110},
+    {k:'start_date',l:'계약시작',w:95},{k:'end_date',l:'종료예정',w:95},
+    {k:'snapshot_ym',l:'기준월',w:75},{k:'mgr',l:'담당자',w:70},{k:'note',l:'비고',w:150},{k:'_st',l:'상태',w:65}
+  ],numCols:['monthly_fee']},
+  oa:{label:'OA렌탈',cols:[
+    {k:'item',l:'품목',w:110},{k:'vendor',l:'업체',w:120},{k:'model',l:'대표모델명',w:260},
+    {k:'unit_price',l:'단가(VAT제외)',num:1,w:120},{k:'contract_term',l:'계약기간',w:75},
+    {k:'qty',l:'수량',cnt:1,w:60},{k:'monthly_fee',l:'렌탈료',num:1,w:100},{k:'pay_basis',l:'지급기준',w:220},
+    {k:'snapshot_ym',l:'기준월',w:75},{k:'mgr',l:'담당자',w:70},{k:'note',l:'비고',w:150}
+  ],numCols:['unit_price','monthly_fee']},
+  other:{label:'기타렌탈',cols:[
+    {k:'cat',l:'구분',cat:1,w:90},{k:'item',l:'품목',w:110},{k:'vendor',l:'업체',w:110},{k:'model',l:'모델명',w:160},
+    {k:'contract_term',l:'계약기간',w:75},{k:'qty',l:'수량',cnt:1,w:60},{k:'monthly_fee',l:'렌탈료',num:1,w:100},
+    {k:'pay_basis',l:'지급기준',w:200},{k:'snapshot_ym',l:'기준월',w:75},{k:'mgr',l:'담당자',w:70},{k:'note',l:'비고',w:150}
+  ],numCols:['monthly_fee']},
+  // 세부현황
+  dveh:{label:'차량 세부현황',cols:[
+    {k:'seq',l:'번호',cnt:1,w:50},{k:'contract_no',l:'계약번호',w:130},{k:'car_no',l:'차량번호',w:95},
+    {k:'rental_co',l:'렌탈사',w:90},{k:'own_type',l:'소유방식',w:75},{k:'seq_no',l:'회차',cnt:1,w:55},
+    {k:'monthly_fee',l:'월렌탈료',num:1,w:100},{k:'car_type',l:'차종명',w:230},{k:'car_kind',l:'차종구분',w:70},
+    {k:'start_date',l:'사용시작',w:95},{k:'end_date',l:'종료예정',w:95},
+    {k:'dept_cat',l:'부서구분',w:90},{k:'hq',l:'본부',w:110},{k:'branch',l:'지사',w:120},{k:'use_place',l:'운행처',w:120},
+    {k:'snapshot_ym',l:'기준월',w:75},{k:'note',l:'비고',w:120},{k:'_st',l:'상태',w:65}
+  ],numCols:['monthly_fee']},
+  dpc:{label:'업무용PC 세부현황',cols:[
+    {k:'seq',l:'No',cnt:1,w:50},{k:'contract_no',l:'계약번호',w:110},{k:'exec_no',l:'실행번호',w:110},
+    {k:'start_date',l:'시작일',w:95},{k:'end_date',l:'종료일',w:95},
+    {k:'item',l:'품목',w:80},{k:'model',l:'모델명',w:220},{k:'serial_no',l:'제조번호',w:130},{k:'equip_no',l:'설비번호',w:90},
+    {k:'qty',l:'대수',cnt:1,w:55},{k:'unit_fee',l:'대당렌탈료',num:1,w:100},
+    {k:'emp_code',l:'사번/접점코드',w:110},{k:'address',l:'주소',w:250},{k:'user_name',l:'사용자',w:120},
+    {k:'snapshot_ym',l:'기준월',w:75}
+  ],numCols:['unit_fee']},
+  dprinter:{label:'복합기 세부현황',cols:[
+    {k:'printer_type',l:'유형',w:70},{k:'seq',l:'No',cnt:1,w:50},{k:'dept1',l:'부서1',w:110},{k:'dept2',l:'부서2',w:110},
+    {k:'install_date',l:'설치일',w:95},{k:'contract_end',l:'약정종료',w:95},
+    {k:'location',l:'설치위치',w:230},{k:'model',l:'모델',w:90},{k:'qty',l:'수량',cnt:1,w:55},
+    {k:'serial_no',l:'시리얼/제조번호',w:150},{k:'manager',l:'담당',w:80},{k:'contact',l:'연락처',w:120},
+    {k:'bill_month',l:'청구월',w:70},{k:'monthly_fee',l:'렌탈료',num:1,w:90},
+    {k:'snapshot_ym',l:'기준월',w:75},{k:'note',l:'비고',w:120}
+  ],numCols:['monthly_fee']},
+  dplotter:{label:'플로터 세부현황',cols:[
+    {k:'seq',l:'No',cnt:1,w:50},{k:'region',l:'지역',w:80},{k:'branch',l:'지점',w:180},
+    {k:'manager',l:'담당점장',w:90},{k:'contact',l:'연락처',w:110},
+    {k:'address',l:'주소',w:280},{k:'install_date',l:'설치일',w:95},
+    {k:'visit_date',l:'방문일자',w:90},{k:'monthly_fee',l:'렌탈료',num:1,w:90},
+    {k:'snapshot_ym',l:'기준월',w:75},{k:'note',l:'비고',w:120},{k:'_st',l:'상태',w:65}
+  ],numCols:['monthly_fee']}
+};
+
+const FORM_DEF={
+  lease:[{k:'cat',l:'구분',sel:['본사','강북영업본부','강남영업본부','강서영업본부','동부영업본부','서부영업본부','영업센터','물류센터','사택'],req:1},{k:'org',l:'입주기관',req:1},{k:'address',l:'주소',full:1},{k:'headcount',l:'입주인원'},{k:'deposit',l:'보증금(원)'},{k:'rent',l:'임차료(원)'},{k:'maintenance',l:'관리비'},{k:'lease_sqm',l:'임대평수'},{k:'exclusive_sqm',l:'전용평수'},{k:'rent_per_sqm',l:'평당단가(원)'},{k:'conv_deposit',l:'환산보증금(원)'},{k:'conv_rent',l:'환산임대료(원)'},{k:'start_date',l:'계약시작',dt:1},{k:'end_date',l:'계약종료',dt:1,req:1},{k:'mgr',l:'담당자'},{k:'note',l:'비고',full:1}],
+  ins:[{k:'ins_type',l:'보험종류',sel:['임원배상책임보험','임직원 단체상해보험','재산종합보험(화재보험)','기타'],req:1},{k:'insurer',l:'보험사'},{k:'start_date',l:'계약시작',dt:1},{k:'end_date',l:'계약종료',dt:1,req:1},{k:'amount',l:'보험료(원)',req:1},{k:'coverage',l:'보상한도'},{k:'target',l:'보험대상'},{k:'details',l:'주요담보사항',full:1},{k:'mgr',l:'담당자'},{k:'note',l:'비고',full:1}],
+  veh:[{k:'cat',l:'구분',sel:['임원용','본사공용','본부및지사','도매센터','법인센터','프론티어'],req:1},{k:'org',l:'운영조직'},{k:'contract_no',l:'계약번호'},{k:'car_no',l:'차량번호',req:1},{k:'car_type',l:'차종'},{k:'monthly_fee',l:'월대여료(원)'},{k:'start_date',l:'계약시작',dt:1},{k:'end_date',l:'종료예정',dt:1,req:1},{k:'mgr',l:'담당자'},{k:'note',l:'비고',full:1}],
+  oa:[{k:'item',l:'품목',sel:['PC본체','노트북','프린터(컬러)','대형복합기','플로터','기타'],req:1},{k:'vendor',l:'업체'},{k:'model',l:'대표모델명',full:1},{k:'unit_price',l:'단가(원,VAT제외)'},{k:'contract_term',l:'계약기간'},{k:'qty',l:'수량'},{k:'monthly_fee',l:'렌탈료(원)'},{k:'pay_basis',l:'지급기준',full:1},{k:'mgr',l:'담당자'},{k:'note',l:'비고',full:1}],
+  other:[{k:'cat',l:'구분',sel:['정수기','비데','공기청정기','기타'],req:1},{k:'item',l:'품목 상세'},{k:'vendor',l:'업체'},{k:'model',l:'모델명'},{k:'contract_term',l:'계약기간'},{k:'qty',l:'수량'},{k:'monthly_fee',l:'렌탈료(원)'},{k:'pay_basis',l:'지급기준',full:1},{k:'mgr',l:'담당자'},{k:'note',l:'비고',full:1}],
+  dveh:[{k:'contract_no',l:'계약번호'},{k:'car_no',l:'차량번호',req:1},{k:'rental_co',l:'렌탈사'},{k:'own_type',l:'소유방식'},{k:'monthly_fee',l:'월렌탈료(원)'},{k:'car_type',l:'차종명',full:1},{k:'car_kind',l:'차종구분'},{k:'start_date',l:'사용시작',dt:1},{k:'end_date',l:'종료예정',dt:1,req:1},{k:'dept_cat',l:'부서구분'},{k:'hq',l:'본부'},{k:'branch',l:'지사'},{k:'use_place',l:'운행처'},{k:'note',l:'비고',full:1}],
+  dpc:[{k:'contract_no',l:'계약번호'},{k:'exec_no',l:'실행번호'},{k:'start_date',l:'시작일',dt:1},{k:'end_date',l:'종료일',dt:1,req:1},{k:'item',l:'품목',sel:['노트북','데스크탑','PC본체']},{k:'model',l:'모델명',full:1},{k:'serial_no',l:'제조번호'},{k:'equip_no',l:'설비번호'},{k:'qty',l:'대수'},{k:'unit_fee',l:'대당렌탈료(원)'},{k:'emp_code',l:'사번/접점코드'},{k:'address',l:'주소',full:1},{k:'user_name',l:'사용자/대리점명'}],
+  dprinter:[{k:'printer_type',l:'유형',sel:['잉크젯','레이저'],req:1},{k:'dept1',l:'부서1'},{k:'dept2',l:'부서2'},{k:'install_date',l:'설치일',dt:1},{k:'contract_end',l:'약정종료',dt:1},{k:'location',l:'설치위치',full:1},{k:'model',l:'모델'},{k:'qty',l:'수량'},{k:'serial_no',l:'시리얼/제조번호'},{k:'manager',l:'담당'},{k:'contact',l:'연락처'},{k:'bill_month',l:'청구월'},{k:'monthly_fee',l:'렌탈료(원)'},{k:'note',l:'비고',full:1}],
+  dplotter:[{k:'region',l:'지역'},{k:'branch',l:'지점명',req:1},{k:'manager',l:'담당점장'},{k:'contact',l:'연락처'},{k:'address',l:'주소',full:1},{k:'install_date',l:'설치일',dt:1},{k:'visit_date',l:'방문일자'},{k:'monthly_fee',l:'렌탈료(원)'},{k:'note',l:'비고',full:1}]
+};
+
+const UP_MAP={
+  lease:[{e:'구분',d:'cat'},{e:'입주기관',d:'org'},{e:'주소',d:'address'},{e:'입주인원',d:'headcount'},{e:'보증금',d:'deposit'},{e:'임차료',d:'rent'},{e:'관리비',d:'maintenance'},{e:'임대평수',d:'lease_sqm'},{e:'전용평수',d:'exclusive_sqm'},{e:'평당단가',d:'rent_per_sqm'},{e:'환산보증금',d:'conv_deposit'},{e:'환산임대료',d:'conv_rent'},{e:'계약시작',d:'start_date'},{e:'계약종료',d:'end_date'},{e:'담당자',d:'mgr'},{e:'비고',d:'note'}],
+  ins:[{e:'보험종류',d:'ins_type'},{e:'보험사',d:'insurer'},{e:'계약시작',d:'start_date'},{e:'계약종료',d:'end_date'},{e:'보험료',d:'amount'},{e:'보상한도',d:'coverage'},{e:'보험대상',d:'target'},{e:'주요담보사항',d:'details'},{e:'담당자',d:'mgr'},{e:'비고',d:'note'}],
+  veh:[{e:'구분',d:'cat'},{e:'운영조직',d:'org'},{e:'계약번호',d:'contract_no'},{e:'차량번호',d:'car_no'},{e:'차종',d:'car_type'},{e:'월대여료',d:'monthly_fee'},{e:'계약시작',d:'start_date'},{e:'종료예정',d:'end_date'},{e:'담당자',d:'mgr'},{e:'비고',d:'note'}],
+  oa:[{e:'품목',d:'item'},{e:'업체',d:'vendor'},{e:'대표모델명',d:'model'},{e:'단가(VAT제외)',d:'unit_price'},{e:'계약기간',d:'contract_term'},{e:'수량',d:'qty'},{e:'렌탈료',d:'monthly_fee'},{e:'지급기준',d:'pay_basis'},{e:'담당자',d:'mgr'},{e:'비고',d:'note'}],
+  other:[{e:'구분',d:'cat'},{e:'품목',d:'item'},{e:'업체',d:'vendor'},{e:'모델명',d:'model'},{e:'계약기간',d:'contract_term'},{e:'수량',d:'qty'},{e:'렌탈료',d:'monthly_fee'},{e:'지급기준',d:'pay_basis'},{e:'담당자',d:'mgr'},{e:'비고',d:'note'}],
+  dveh:[{e:'계약번호',d:'contract_no'},{e:'차량번호',d:'car_no'},{e:'렌탈사',d:'rental_co'},{e:'소유방식',d:'own_type'},{e:'회차',d:'seq_no'},{e:'월렌탈료',d:'monthly_fee'},{e:'차종명',d:'car_type'},{e:'차종구분',d:'car_kind'},{e:'사용시작',d:'start_date'},{e:'종료예정',d:'end_date'},{e:'부서구분',d:'dept_cat'},{e:'본부',d:'hq'},{e:'지사',d:'branch'},{e:'운행처',d:'use_place'},{e:'비고',d:'note'}],
+  dpc:[{e:'계약번호',d:'contract_no'},{e:'실행번호',d:'exec_no'},{e:'시작일',d:'start_date'},{e:'종료일',d:'end_date'},{e:'품목',d:'item'},{e:'모델명',d:'model'},{e:'제조번호',d:'serial_no'},{e:'설비번호',d:'equip_no'},{e:'대수',d:'qty'},{e:'대당렌탈료',d:'unit_fee'},{e:'사번/접점코드',d:'emp_code'},{e:'주소',d:'address'},{e:'사용자/대리점명',d:'user_name'}],
+  dprinter:[{e:'유형',d:'printer_type'},{e:'부서1',d:'dept1'},{e:'부서2',d:'dept2'},{e:'설치일',d:'install_date'},{e:'약정종료',d:'contract_end'},{e:'설치위치',d:'location'},{e:'모델',d:'model'},{e:'수량',d:'qty'},{e:'시리얼/제조번호',d:'serial_no'},{e:'담당',d:'manager'},{e:'연락처',d:'contact'},{e:'청구월',d:'bill_month'},{e:'렌탈료',d:'monthly_fee'},{e:'비고',d:'note'}],
+  dplotter:[{e:'지역',d:'region'},{e:'지점명',d:'branch'},{e:'담당점장',d:'manager'},{e:'연락처',d:'contact'},{e:'주소',d:'address'},{e:'설치일',d:'install_date'},{e:'방문일자',d:'visit_date'},{e:'렌탈료',d:'monthly_fee'},{e:'비고',d:'note'}]
+};
+
+const VEH_CAT_COL={임원용:'info',본사공용:'ok',본부및지사:'gray',도매센터:'purple-b',법인센터:'warn',프론티어:'danger'};
+const LEASE_CAT_COL={본사:'info',강북영업본부:'ok',강남영업본부:'ok',강서영업본부:'ok',동부영업본부:'ok',서부영업본부:'ok',영업센터:'warn',물류센터:'gray',사택:'purple-b'};
+
+// ============================================================
+// 유틸
+// ============================================================
+const NOW=new Date();NOW.setHours(0,0,0,0);
+function dl(d){if(!d)return 9999;const t=new Date(d);t.setHours(0,0,0,0);return Math.round((t-NOW)/86400000);}
+function stb(d){const n=dl(d);if(n<0)return{c:'danger',t:'만료'};if(n<=30)return{c:'danger',t:'D-'+n};if(n<=90)return{c:'warn',t:'D-'+n};return{c:'ok',t:'정상'};}
+function fn(v){return Number(v||0).toLocaleString();}
+function toMan(v){return Math.round(Number(v||0)/10000);}
+function getR(t){return DB[TAB_DB[t]]||[];}
+function showL(m){document.getElementById('ltxt').textContent=m||'처리 중...';document.getElementById('loading').classList.add('show');}
+function hideL(){document.getElementById('loading').classList.remove('show');}
+function toast(m,t){const el=document.getElementById('toast');el.textContent=m;el.className='toast '+(t||'')+' show';setTimeout(()=>el.classList.remove('show'),3000);}
+
+function calcLeaseSum(r){
+  const rent=Number(r.rent||0);const m=String(r.maintenance||'').trim();const mN=Number(m.replace(/,/g,''));
+  if(!m||m==='0') return rent?`<span class="sum-badge">${rent.toLocaleString()}</span>`:'';
+  if(!isNaN(mN)&&mN>0) return `<span class="sum-badge">${(rent+mN).toLocaleString()}</span>`;
+  return `<span class="sum-badge">${rent.toLocaleString()} + ${m}</span>`;
+}
+function calcLeaseSumTxt(r){
+  const rent=Number(r.rent||0);const m=String(r.maintenance||'').trim();const mN=Number(m.replace(/,/g,''));
+  if(!m||m==='0') return rent.toLocaleString()+'원';
+  if(!isNaN(mN)&&mN>0) return (rent+mN).toLocaleString()+'원';
+  return rent.toLocaleString()+' + '+m;
+}
+
+// ============================================================
+// 기준월 드롭다운 갱신
+// ============================================================
+function fillYmSelects(){
+  const all=['lease','ins','veh','oa','other','dveh','dpc','dprinter','dplotter'];
+  all.forEach(t=>{
+    const sel=document.getElementById('f-'+t+'-ym');if(!sel)return;
+    const yms=[...new Set(getR(t).map(r=>r.snapshot_ym).filter(Boolean))].sort().reverse();
+    const cur=sel.value;
+    sel.innerHTML='<option value="">전체 기준월</option>'+yms.map(y=>`<option value="${y}"${y===cur?' selected':''}>${y}</option>`).join('');
+  });
+}
+
+// ============================================================
+// 데이터 로드
+// ============================================================
+async function loadAll(){
+  showL('데이터 불러오는 중...');
+  try{
+    const res=await Promise.all([
+      db.from('lease').select('*').order('snapshot_ym',{ascending:false}).order('created_at'),
+      db.from('insurance').select('*').order('snapshot_ym',{ascending:false}).order('created_at'),
+      db.from('vehicle').select('*').order('snapshot_ym',{ascending:false}).order('created_at'),
+      db.from('oa_rental').select('*').order('snapshot_ym',{ascending:false}).order('created_at'),
+      db.from('other_rental').select('*').order('snapshot_ym',{ascending:false}).order('created_at'),
+      db.from('detail_vehicle').select('*').order('snapshot_ym',{ascending:false}).order('seq'),
+      db.from('detail_pc').select('*').order('snapshot_ym',{ascending:false}).order('seq'),
+      db.from('detail_printer').select('*').order('snapshot_ym',{ascending:false}).order('seq'),
+      db.from('detail_plotter').select('*').order('snapshot_ym',{ascending:false}).order('seq'),
+    ]);
+    if(res[0].error)throw res[0].error;
+    const keys=['lease','insurance','vehicle','oa_rental','other_rental','detail_vehicle','detail_pc','detail_printer','detail_plotter'];
+    keys.forEach((k,i)=>DB[k]=res[i].data||[]);
+    fillYmSelects();renderDash();
+    if(curTab!=='dash')renderT(curTab);
+  }catch(e){toast('불러오기 실패: '+(e.message||e),'err');}
+  hideL();
+}
+
+// ============================================================
+// 탭 전환
+// ============================================================
+function sw(btn){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');curTab=btn.dataset.tab;
+  document.getElementById('pane-'+curTab).classList.add('active');
+  const detailTabs=['dveh','dpc','dprinter','dplotter'];
+  if(detailTabs.includes(curTab)) renderDetail(curTab);
+  else if(curTab!=='dash') renderT(curTab);
+}
+
+// ============================================================
+// 컬럼 너비 저장/로드
+// ============================================================
+function getColW(t){const s=localStorage.getItem('cw_'+t);return s?JSON.parse(s):{};}
+function saveColW(t,w){localStorage.setItem('cw_'+t,JSON.stringify(w));}
+
+// ============================================================
+// 범용 테이블 빌더 (관리 + 세부현황 공통)
+// ============================================================
+function buildTable(t,rows,sc,opts={}){
+  const saved=getColW(t);
+  const hasChk=opts.hasChk!==false;
+  const hasDel=opts.hasDel!==false;
+  const hasSum=opts.hasSum!==false;
+
+  let h='<colgroup>';
+  if(hasChk) h+=`<col style="width:36px">`;
+  sc.cols.forEach((c,i)=>{ const w=saved[i]||c.w||120; h+=`<col style="width:${w}px">`; });
+  if(hasDel) h+=`<col style="width:65px">`;
+  h+='</colgroup>';
+
+  // thead
+  h+=`<thead><tr>`;
+  if(hasChk) h+=`<th class="chk-col" style="width:36px"><input type="checkbox" id="chk-all-${t}" onchange="toggleAll('${t}',this)"></th>`;
+  sc.cols.forEach((c,i)=>{
+    const w=saved[i]||c.w||120;
+    const align=c.num?'r':c.cnt?'c':'';
+    h+=`<th style="width:${w}px"><span class="thi">${c.l}</span><div class="col-resizer" onmousedown="startResize(event,'${t}',${i})"></div></th>`;
+  });
+  if(hasDel) h+=`<th style="width:65px"><span class="thi">관리</span></th>`;
+  h+=`</tr></thead>`;
+
+  // td 클래스 결정 함수
+  const tdClass=(c)=>{ if(c.num) return ' class="r"'; if(c.cnt) return ' class="c"'; return ''; };
+
+  // tbody
+  h+='<tbody>';
+  if(!rows.length){
+    h+=`<tr><td colspan="${sc.cols.length+(hasChk?1:0)+(hasDel?1:0)}" style="text-align:center;padding:30px;color:var(--muted)">데이터가 없습니다</td></tr>`;
+  } else {
+    rows.forEach(r=>{
+      const b=r.end_date?stb(r.end_date):null;
+      h+=`<tr onclick="handleRowClick(event,'${t}','${r.id}')">`;
+      if(hasChk) h+=`<td class="chk-col" onclick="event.stopPropagation()"><input type="checkbox" class="row-chk" data-id="${r.id}" onchange="updDelBtn('${t}')"></td>`;
+      sc.cols.forEach(c=>{
+        if(c.k==='_st') h+=b?`<td class="c"><span class="badge ${b.c}">${b.t}</span></td>`:'<td class="c">—</td>';
+        else if(c.k==='_sum') h+=`<td class="r">${calcLeaseSum(r)}</td>`;
+        else if(c.cat&&t==='veh') h+=`<td class="c"><span class="badge ${VEH_CAT_COL[r.cat]||'gray'}">${r.cat||''}</span></td>`;
+        else if(c.cat&&(t==='lease'||t==='other'||t==='dveh'||t==='dprinter')) h+=`<td class="c"><span class="badge ${LEASE_CAT_COL[r.cat]||'gray'}">${r.cat||''}</span></td>`;
+        else if(c.num){
+          const v=Number(r[c.k]||0);
+          h+=`<td class="r">${v?v.toLocaleString()+'원':''}</td>`;
+        }
+        else if(c.cnt){
+          h+=`<td class="c">${r[c.k]??''}</td>`;
+        }
+        else h+=`<td title="${String(r[c.k]||'').replace(/"/g,'')}">${r[c.k]||''}</td>`;
+      });
+      if(hasDel) h+=`<td onclick="event.stopPropagation()"><button class="btn btn-sm btn-del" onclick="singleDel('${t}','${r.id}')">삭제</button></td>`;
+      h+=`</tr>`;
+    });
+  }
+  h+='</tbody>';
+
+  // tfoot (합계행)
+  if(hasSum && rows.length>0 && sc.numCols && sc.numCols.length>0){
+    const sums={};
+    sc.numCols.forEach(k=>{sums[k]=rows.reduce((s,r)=>s+Number(r[k]||0),0);});
+    h+=`<tfoot><tr>`;
+    if(hasChk) h+=`<td class="sum-label">—</td>`;
+    sc.cols.forEach((c,ci)=>{
+      if(ci===0 && !c.cat && !c.num && c.k!=='_st' && c.k!=='_sum'){
+        h+=`<td class="sum-label">합계 ${rows.length.toLocaleString()}건</td>`;
+      } else if(c.k==='_sum'){
+        const sumRent=rows.reduce((s,r)=>s+Number(r.rent||0),0);
+        const sumMaint=rows.reduce((s,r)=>{const m=Number(String(r.maintenance||'').replace(/,/g,''));return s+(isNaN(m)?0:m);},0);
+        h+=`<td class="r">${(sumRent+sumMaint).toLocaleString()}원</td>`;
+      } else if(c.num && sums[c.k]!==undefined){
+        h+=`<td class="r">${sums[c.k].toLocaleString()}원</td>`;
+      } else if(c.k==='qty'||c.cnt){
+        h+=`<td class="c">${rows.reduce((s,r)=>s+Number(r.qty||r[c.k]||0),0).toLocaleString()}</td>`;
+      } else {
+        h+=`<td>—</td>`;
+      }
+    });
+    if(hasDel) h+=`<td>—</td>`;
+    h+=`</tr></tfoot>`;
+  }
+
+  return h;
+}
+
+// ============================================================
+// 관리 탭 테이블 렌더
+// ============================================================
+function renderT(t){
+  const q=(document.getElementById('s-'+t)||{value:''}).value.toLowerCase();
+  const cat=(document.getElementById('f-'+t+'-cat')||{value:''}).value;
+  const ym=(document.getElementById('f-'+t+'-ym')||{value:''}).value;
+  let rows=getR(t).filter(r=>Object.values(r).some(v=>String(v||'').toLowerCase().includes(q)));
+  if(cat) rows=rows.filter(r=>r.cat===cat);
+  if(ym)  rows=rows.filter(r=>r.snapshot_ym===ym);
+  const sc=SCHEMAS[t];
+  document.getElementById('t-'+t).innerHTML=buildTable(t,rows,sc);
+  updDelBtn(t);
+}
+
+// ============================================================
+// 세부현황 탭 렌더
+// ============================================================
+function renderDetail(t){
+  const q=(document.getElementById('s-'+t)||{value:''}).value.toLowerCase();
+  const ym=(document.getElementById('f-'+t+'-ym')||{value:''}).value;
+  const catSel=document.getElementById('f-'+t+'-cat')||document.getElementById('f-'+t+'-item')||document.getElementById('f-'+t+'-type');
+  const cat=catSel?catSel.value:'';
+
+  let rows=getR(t).filter(r=>Object.values(r).some(v=>String(v||'').toLowerCase().includes(q)));
+  if(ym) rows=rows.filter(r=>r.snapshot_ym===ym);
+  if(cat){
+    if(t==='dveh') rows=rows.filter(r=>r.dept_cat===cat);
+    else if(t==='dpc') rows=rows.filter(r=>r.item===cat);
+    else if(t==='dprinter') rows=rows.filter(r=>r.printer_type===cat);
+  }
+
+  const sc=SCHEMAS[t];
+
+  // info bar
+  const infoEl=document.getElementById('info-'+t);
+  if(infoEl){
+    let chips='';
+    chips+=`<div class="info-chip">총 건수 <span>${rows.length.toLocaleString()}건</span></div>`;
+    if(sc.numCols){sc.numCols.forEach(k=>{const sum=rows.reduce((s,r)=>s+Number(r[k]||0),0);chips+=`<div class="info-chip">${SCHEMAS[t].cols.find(c=>c.k===k)?.l||k} 합계 <span>${sum.toLocaleString()}원 (${toMan(sum).toLocaleString()}만원)</span></div>`;});}
+    infoEl.innerHTML=chips;
+  }
+
+  document.getElementById('t-'+t).innerHTML=buildTable(t,rows,sc);
+  updDelBtn(t);
+}
+
+// ============================================================
+// 컬럼 리사이즈 (마우스 + 터치 지원)
+// ============================================================
+function startResize(e,t,ci){
+  e.preventDefault();e.stopPropagation();
+  const handle=e.target;
+  const th=handle.parentElement;
+  handle.classList.add('drag');
+  const startX=(e.touches?e.touches[0]:e).clientX;
+  const startW=th.offsetWidth;
+  resizeState={t,ci,startX,startW,handle};
+
+  function doMove(ev){
+    if(!resizeState)return;
+    const cx=(ev.touches?ev.touches[0]:ev).clientX;
+    const nw=Math.max(40,resizeState.startW+(cx-resizeState.startX));
+    // 저장
+    const saved=getColW(resizeState.t);
+    saved[resizeState.ci]=Math.round(nw);
+    saveColW(resizeState.t,saved);
+    // DOM 직접 업데이트 (rerender 없이)
+    const tbl=document.getElementById('t-'+resizeState.t);
+    if(!tbl)return;
+    // colgroup col: 체크박스 col(0) 다음이 데이터 col(1+)
+    const cols=tbl.querySelectorAll('colgroup col');
+    if(cols[resizeState.ci+1]) cols[resizeState.ci+1].style.width=Math.round(nw)+'px';
+    // th: 체크박스 th(0) 다음이 데이터 th(1+)
+    const ths=tbl.querySelectorAll('thead tr th');
+    if(ths[resizeState.ci+1]){
+      ths[resizeState.ci+1].style.width=Math.round(nw)+'px';
+      ths[resizeState.ci+1].style.minWidth=Math.round(nw)+'px';
+    }
+  }
+  function doUp(){
+    if(resizeState){resizeState.handle.classList.remove('drag');resizeState=null;}
+    document.removeEventListener('mousemove',doMove);
+    document.removeEventListener('mouseup',doUp);
+    document.removeEventListener('touchmove',doMove);
+    document.removeEventListener('touchend',doUp);
+  }
+  document.addEventListener('mousemove',doMove,{passive:false});
+  document.addEventListener('mouseup',doUp);
+  document.addEventListener('touchmove',doMove,{passive:false});
+  document.addEventListener('touchend',doUp);
+}
+
+// ============================================================
+// 행 클릭 → 세부 팝업
+// ============================================================
+function handleRowClick(e,t,id){
+  if(e.target.tagName==='INPUT'||e.target.tagName==='BUTTON')return;
+  const r=getR(t).find(row=>row.id===id);if(!r)return;
+  openDetail(t,r);
+}
+function openDetail(t,r){
+  const sc=SCHEMAS[t];const b=r.end_date?stb(r.end_date):null;
+  document.getElementById('detail-title').textContent=sc.label+' 세부 내역';
+  let html='<div class="detail-grid">';
+  sc.cols.filter(c=>!c.k.startsWith('_')).forEach(c=>{
+    let val=r[c.k]??'';if(c.num)val=val?Number(val).toLocaleString()+'원':'';
+    html+=`<div class="detail-row"><div class="d-label">${c.l}</div><div class="d-val">${val||'—'}</div></div>`;
+  });
+  if(t==='lease') html+=`<div class="detail-row" style="background:var(--blue-bg)"><div class="d-label" style="background:transparent;color:var(--blue)">임차료+관리비 합계</div><div class="d-val hl">${calcLeaseSumTxt(r)}</div></div>`;
+  if(b) html+=`<div class="detail-row"><div class="d-label">계약 상태</div><div class="d-val"><span class="badge ${b.c}">${b.t}</span></div></div>`;
+  html+='</div>';
+  document.getElementById('detail-body').innerHTML=html;
+  document.getElementById('detail-modal').classList.add('open');
+}
+function closeDetail(){document.getElementById('detail-modal').classList.remove('open');}
+
+// ============================================================
+// 체크박스 & 삭제
+// ============================================================
+function toggleAll(t,el){document.querySelectorAll(`#t-${t} .row-chk`).forEach(c=>c.checked=el.checked);updDelBtn(t);}
+function updDelBtn(t){
+  const n=document.querySelectorAll(`#t-${t} .row-chk:checked`).length;
+  const btn=document.getElementById('del-btn-'+t);if(!btn)return;
+  btn.textContent=`선택 삭제 (${n})`;btn.style.display=n>0?'inline-flex':'none';
+  const all=document.querySelectorAll(`#t-${t} .row-chk`);
+  const ac=document.getElementById('chk-all-'+t);
+  if(ac&&all.length>0){ac.indeterminate=(n>0&&n<all.length);ac.checked=(n===all.length);}
+}
+async function bulkDel(t){
+  const ids=[...document.querySelectorAll(`#t-${t} .row-chk:checked`)].map(c=>c.dataset.id);
+  if(!ids.length)return;if(!confirm(`${ids.length}건을 삭제하시겠습니까?`))return;
+  showL(`${ids.length}건 삭제 중...`);
+  try{const{error}=await db.from(TAB_TBL[t]).delete().in('id',ids);if(error)throw error;toast(`${ids.length}건 삭제됨`,'ok');await loadAll();}
+  catch(e){toast('삭제 실패: '+(e.message||e),'err');}hideL();
+}
+async function bulkDelDetail(t){return bulkDel(t);}
+async function singleDel(t,id){
+  if(!confirm('삭제하시겠습니까?'))return;showL('삭제 중...');
+  try{const{error}=await db.from(TAB_TBL[t]).delete().eq('id',id);if(error)throw error;toast('삭제됨','ok');await loadAll();}
+  catch(e){toast('삭제 실패: '+(e.message||e),'err');}hideL();
+}
+
+// ============================================================
+// 대시보드
+// ============================================================
+function renderDash(){
+  const lM=DB.lease.reduce((s,r)=>s+Number(r.rent||0),0);
+  const iM=DB.insurance.reduce((s,r)=>s+Number(r.amount||0),0);
+  const vM=DB.vehicle.reduce((s,r)=>s+Number(r.monthly_fee||0),0);
+  const oM=DB.oa_rental.reduce((s,r)=>s+Number(r.monthly_fee||0),0);
+  const rM=DB.other_rental.reduce((s,r)=>s+Number(r.monthly_fee||0),0);
+  const tM=lM+iM+vM+oM+rM;
+
+  // ① 월 비용 합계 카드
+  const totalCnt=DB.lease.length+DB.insurance.length+DB.vehicle.length+DB.oa_rental.length+DB.other_rental.length;
+  document.getElementById('cost-total-card').innerHTML=`
+    <div>
+      <div class="cost-total-label">전체 월 지출 합계</div>
+      <div class="cost-total-val">${toMan(tM).toLocaleString()}<span class="cost-total-unit">만원</span></div>
+      <div class="cost-total-sub">총 ${totalCnt.toLocaleString()}건 · 5개 항목</div>
+    </div>
+    <div class="cost-total-badges">
+      <div class="cost-total-badge">임대차 ${toMan(lM).toLocaleString()}만</div>
+      <div class="cost-total-badge">보험 ${toMan(iM).toLocaleString()}만</div>
+      <div class="cost-total-badge">차량 ${toMan(vM).toLocaleString()}만</div>
+      <div class="cost-total-badge">OA ${toMan(oM).toLocaleString()}만</div>
+      <div class="cost-total-badge">기타 ${toMan(rM).toLocaleString()}만</div>
+    </div>`;
+
+  // ① 항목별 월 비용 카드
+  const costItems=[
+    {label:'임대차',mon:lM,cnt:DB.lease.length,color:'#1a73e8',sub:'임차료 기준'},
+    {label:'보험계약',mon:iM,cnt:DB.insurance.length,color:'#188038',sub:'월 환산'},
+    {label:'차량',mon:vM,cnt:DB.vehicle.length,color:'#e37400',sub:'월 대여료'},
+    {label:'OA렌탈',mon:oM,cnt:DB.oa_rental.length,color:'#6200ea',sub:'월 렌탈료'},
+    {label:'기타렌탈',mon:rM,cnt:DB.other_rental.length,color:'#d32f2f',sub:'월 렌탈료'},
+  ];
+  document.getElementById('cost-grid').innerHTML=costItems.map(it=>`
+    <div class="cost-item">
+      <div class="cost-item-bar" style="background:${it.color}"></div>
+      <div class="cost-item-label">${it.label}</div>
+      <div class="cost-item-val">${toMan(it.mon).toLocaleString()}<span class="cost-item-unit">만원</span></div>
+      <div class="cost-item-sub">${it.cnt}건 · ${it.sub}</div>
+    </div>`).join('');
+
+  // ② 항목별 요약 카드
+  renderSummaryCard('lease','임대차','#1a73e8',DB.lease,lM,
+    r=>r.cat, ['본사','강북영업본부','강남영업본부','강서영업본부','동부영업본부','서부영업본부','영업센터','물류센터','사택'],
+    r=>Number(r.rent||0), '임차료');
+
+  renderSummaryCard('ins','보험계약','#188038',DB.insurance,iM,
+    r=>r.ins_type, ['임원배상책임보험','임직원 단체상해보험','재산종합보험(화재보험)'],
+    r=>Number(r.amount||0), '보험료');
+
+  renderSummaryCard('veh','차량','#e37400',DB.vehicle,vM,
+    r=>r.cat, ['임원용','본사공용','본부및지사','도매센터','법인센터','프론티어'],
+    r=>Number(r.monthly_fee||0), '월대여료');
+
+  renderSummaryCard('oa','OA렌탈','#6200ea',DB.oa_rental,oM,
+    r=>r.item, ['PC본체','노트북','프린터(컬러)','대형복합기','플로터'],
+    r=>Number(r.monthly_fee||0), '렌탈료');
+
+  renderSummaryCard('other','기타렌탈','#d32f2f',DB.other_rental,rM,
+    r=>r.cat, ['정수기','비데','공기청정기'],
+    r=>Number(r.monthly_fee||0), '렌탈료');
+}
+
+function renderSummaryCard(id, label, color, rows, totalMon, catFn, cats, monFn, monLabel){
+  // 상태 계산
+  let ok=0,warn=0,danger=0;
+  rows.forEach(r=>{
+    const n=dl(r.end_date);
+    if(r.end_date){if(n<0)danger++;else if(n<=90)warn++;else ok++;}
+    else ok++;
+  });
+
+  // 만료임박 목록
+  const expItems=rows.filter(r=>r.end_date&&dl(r.end_date)<=90).sort((a,b)=>dl(a.end_date)-dl(b.end_date)).slice(0,3);
+
+  // 구분별 현황
+  const catData=cats.map(c=>{
+    const filtered=rows.filter(r=>catFn(r)===c);
+    return{c,cnt:filtered.length,mon:filtered.reduce((s,r)=>s+monFn(r),0)};
+  }).filter(d=>d.cnt>0);
+  const maxMon=catData.length?Math.max(...catData.map(d=>d.mon)):1;
+
+  const el=document.getElementById('summary-'+id);
+  if(!el)return;
+
+  el.innerHTML=`
+    <div class="sc-head">
+      <div class="sc-title">
+        <div class="sc-title-bar" style="background:${color}"></div>
+        ${label}
+      </div>
+      <div class="sc-stats">
+        <div class="sc-stat"><div class="sc-stat-val" style="color:${color}">${rows.length}</div><div class="sc-stat-label">전체 건수</div></div>
+        <div class="sc-stat"><div class="sc-stat-val" style="color:${color}">${toMan(totalMon).toLocaleString()}만</div><div class="sc-stat-label">월 ${monLabel}</div></div>
+        <div class="sc-stat"><div class="sc-stat-val" style="color:var(--orange)">${warn}</div><div class="sc-stat-label">만료임박</div></div>
+        <div class="sc-stat"><div class="sc-stat-val" style="color:var(--red)">${danger}</div><div class="sc-stat-label">만료</div></div>
+      </div>
+    </div>
+    <div class="sc-body">
+      ${catData.length?`
+        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px;letter-spacing:.3px">구분별 현황</div>
+        ${catData.map(d=>`
+          <div class="sc-row">
+            <div class="sc-row-label">${d.c}</div>
+            <div class="sc-row-bar-wrap"><div class="sc-row-bar-fill" style="width:${Math.round(d.mon/maxMon*100)}%;background:${color}22;border:1px solid ${color}44"></div></div>
+            <div class="sc-row-val">${d.cnt}건${d.mon?` · ${toMan(d.mon).toLocaleString()}만`:''}</div>
+          </div>`).join('')}
+      `:'<div style="color:var(--muted);font-size:12px;padding:4px 0">데이터가 없습니다</div>'}
+      ${expItems.length?`
+        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-top:12px;margin-bottom:6px;letter-spacing:.3px">만료 임박 (90일 이내)</div>
+        ${expItems.map(r=>{
+          const b=stb(r.end_date);
+          const name=r.org||r.ins_type||r.car_no||r.item||r.cat||'—';
+          return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px">
+            <span class="badge ${b.c}" style="min-width:44px;text-align:center">${b.t}</span>
+            <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</span>
+            <span style="color:var(--muted);white-space:nowrap">${r.end_date}</span>
+          </div>`;
+        }).join('')}
+      `:''}
+    </div>`;
+}
+function renderTrend(){
+  const allRows=[...DB.lease,...DB.insurance,...DB.vehicle,...DB.oa_rental,...DB.other_rental];
+  const months=[...new Set(allRows.map(r=>r.snapshot_ym).filter(Boolean))].sort();
+  if(!months.length){['trendCostChart','trendCountChart'].forEach(id=>{if(charts[id]){charts[id].destroy();delete charts[id];}});document.getElementById('trend-table').innerHTML='<tr><td style="padding:20px;color:var(--muted);text-align:center">기준월 데이터가 없습니다</td></tr>';return;}
+  const td=months.map(ym=>{
+    const lR=DB.lease.filter(r=>r.snapshot_ym===ym),vR=DB.vehicle.filter(r=>r.snapshot_ym===ym),oR=DB.oa_rental.filter(r=>r.snapshot_ym===ym),rR=DB.other_rental.filter(r=>r.snapshot_ym===ym),iR=DB.insurance.filter(r=>r.snapshot_ym===ym);
+    const lC=lR.reduce((s,r)=>s+Number(r.rent||0),0),vC=vR.reduce((s,r)=>s+Number(r.monthly_fee||0),0),oC=oR.reduce((s,r)=>s+Number(r.monthly_fee||0),0),rC=rR.reduce((s,r)=>s+Number(r.monthly_fee||0),0);
+    return{ym,totalCost:lC+vC+oC+rC,totalCount:lR.length+iR.length+vR.length+oR.length+rR.length,lC,vC,oC,rC};
+  });
+  mkChartLine('trendCostChart',months,[{label:'임대차',data:td.map(d=>toMan(d.lC)),color:'#1a73e8'},{label:'차량',data:td.map(d=>toMan(d.vC)),color:'#188038'},{label:'OA렌탈',data:td.map(d=>toMan(d.oC)),color:'#6200ea'},{label:'기타렌탈',data:td.map(d=>toMan(d.rC)),color:'#e37400'}]);
+  mkChart('trendCountChart','bar',months,td.map(d=>d.totalCount),months.map((_,i)=>i===months.length-1?'#1a73e8':'#b5d4f4'));
+  let h='<thead><tr><th>기준월</th><th>건수</th><th>임대차</th><th>차량</th><th>OA렌탈</th><th>기타렌탈</th><th>합계(만)</th><th>전월대비</th></tr></thead><tbody>';
+  td.slice().reverse().forEach((d,i,arr)=>{
+    const prev=arr[i+1];let diff='-';
+    if(prev){const v=toMan(d.totalCost)-toMan(prev.totalCost);const cls=v>0?'up':v<0?'dn':'eq';const s=v>0?'▲':v<0?'▼':'–';diff=`<span class="trend-diff ${cls}">${s}${Math.abs(v).toLocaleString()}만</span>`;}
+    h+=`<tr style="${i===0?'font-weight:600':''}"><td>${d.ym}${i===0?' <span class="badge info" style="font-size:10px">최신</span>':''}</td><td>${d.totalCount}</td><td>${toMan(d.lC).toLocaleString()}</td><td>${toMan(d.vC).toLocaleString()}</td><td>${toMan(d.oC).toLocaleString()}</td><td>${toMan(d.rC).toLocaleString()}</td><td>${toMan(d.totalCost).toLocaleString()}</td><td>${diff}</td></tr>`;
+  });
+  document.getElementById('trend-table').innerHTML=h+'</tbody>';
+}
+function mkChartLine(id,labels,datasets){
+  if(charts[id]){charts[id].destroy();delete charts[id];}
+  charts[id]=new Chart(document.getElementById(id),{type:'line',data:{labels,datasets:datasets.map(ds=>({label:ds.label,data:ds.data,borderColor:ds.color,backgroundColor:ds.color+'22',borderWidth:2,pointRadius:4,fill:false,tension:0.3}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'top',labels:{font:{size:11},boxWidth:12,padding:10}}},scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{grid:{color:'rgba(0,0,0,0.05)'},ticks:{callback:v=>v.toLocaleString()+'만',font:{size:11}}}}}});
+}
+function mkChart(id,type,labels,data,colors){
+  if(charts[id]){charts[id].destroy();delete charts[id];}
+  const isBar=type==='bar';
+  charts[id]=new Chart(document.getElementById(id),{type,data:{labels,datasets:[{data,backgroundColor:colors,borderRadius:isBar?4:0,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},...(isBar?{scales:{x:{grid:{display:false},ticks:{font:{size:11},maxRotation:35}},y:{grid:{color:'rgba(0,0,0,0.05)'},ticks:{callback:v=>v.toLocaleString()+'만',font:{size:11}}}}}:{cutout:'62%'})}});
+}
+
+// ============================================================
+// 항목 추가
+// ============================================================
+function openAdd(){
+  const t=curTab==='dash'?'lease':curTab;addType=t;
+  document.getElementById('add-title').textContent=SCHEMAS[t].label+' 항목 추가';
+  document.getElementById('add-ym').value=curYM();
+  document.getElementById('add-fields').innerHTML=FORM_DEF[t].map(c=>{
+    const cls=c.full?'fg full':'fg';
+    if(c.sel) return `<div class="${cls}"><label>${c.l}${c.req?' *':''}</label><select id="ff-${c.k}"><option value="">선택하세요</option>${c.sel.map(s=>`<option>${s}</option>`).join('')}</select></div>`;
+    if(c.full&&!c.dt) return `<div class="${cls}"><label>${c.l}${c.req?' *':''}</label><textarea id="ff-${c.k}" rows="2" style="resize:vertical" placeholder="${c.l}"></textarea></div>`;
+    return `<div class="${cls}"><label>${c.l}${c.req?' *':''}</label><input type="${c.dt?'date':'text'}" id="ff-${c.k}" placeholder="${c.l}"></div>`;
+  }).join('');
+  document.getElementById('add-modal').classList.add('open');
+}
+function closeAdd(){document.getElementById('add-modal').classList.remove('open');}
+async function saveAdd(){
+  const ym=document.getElementById('add-ym').value;
+  if(!ym){toast('기준 월을 선택해 주세요','err');return;}
+  const item={snapshot_ym:ym};let valid=true;
+  FORM_DEF[addType].forEach(c=>{
+    const el=document.getElementById('ff-'+c.k);if(!el)return;
+    const v=el.value.trim();item[c.k]=v||null;
+    if(c.req&&!v){el.classList.add('err');valid=false;}else el.classList.remove('err');
+  });
+  if(!valid){toast('* 표시 항목은 필수입니다','err');return;}
+  const btn=document.getElementById('add-save');btn.disabled=true;showL('저장 중...');
+  try{const{error}=await db.from(TAB_TBL[addType]).insert(item);if(error)throw error;closeAdd();toast('저장되었습니다','ok');await loadAll();}
+  catch(e){toast('저장 실패: '+(e.message||e),'err');}btn.disabled=false;hideL();
+}
+
+// ============================================================
+// 서식 다운로드
+// ============================================================
+const TPL_EX={
+  lease:[['본사','본사(169명)','서울 종로구 세종대로 000','169명','76000000','76001400','54096900','1662.3','694.8','110566','7676140000','76761400','2024-07-15','2029-07-14','이재연','']],
+  ins:[['임원배상책임보험','삼성화재','2026-01-01','2027-01-01','13200000','50억','임원','민사상 손해배상 청구','이재연','']],
+  veh:[['임원용','경영기획팀','2024-001','12가3456','K8','950000','2023-05-01','2026-04-30','김담당','']],
+  oa:[['PC본체','롯데렌탈','Tower 280 G9','19600','48개월','254','4028000','근무인원 기준','김하은','']],
+  other:[['정수기','정수기','쿠쿠홈시스','CHP-7000','36개월','171','5376685','매장 신청 시','김하은','']],
+  dveh:[['M2025E001','200하3927','현대캐피탈','장기렌탈','21','2070200','G80 F/L 3.5T','일반차','2024-12-10','2026-07-24','임원용','대표이사','대표이사','대표이사','']],
+  dpc:[['2011000511','2011502358','2025-05-01','2026-03-31','노트북','14Z990 (i5-8265U)','001NZSJ068334','73191751','1','22400','경영기획총괄','경기도 과천시 새술막길 39','홍길동']],
+  dprinter:[['잉크젯','강남소매지사','강남역직영점','2025-10-27','2029-10-26','서울시 강남구 역삼동 824-21 1층','HP 9010','1','TH11D87206','원진오','010-4444-2440','2026.02','33000','']],
+  dplotter:[['경기북부','케이티엠앤에스(일산직영점)','','031-902-0701','경기도 고양시 일산동구 중앙로 1275번길','2025-12-17','2026.01.30','69850','']]
+};
+function dlTpl(t){
+  const map=UP_MAP[t];const hdr=map.map(m=>m.e);const ex=TPL_EX[t]||[];
+  const wb=XLSX.utils.book_new();const ws=XLSX.utils.aoa_to_sheet([hdr,...ex]);
+  ws['!cols']=hdr.map(()=>({wch:18}));XLSX.utils.book_append_sheet(wb,ws,SCHEMAS[t].label);
+  XLSX.writeFile(wb,`[서식]${SCHEMAS[t].label}_업로드양식.xlsx`);toast('서식 다운로드 완료','ok');
+}
+
+// ============================================================
+// 엑셀 업로드
+// ============================================================
+function openUpload(t){
+  upType=t;upData=[];
+  document.getElementById('up-title').textContent=SCHEMAS[t].label+' 엑셀 업로드';
+  document.getElementById('up-ym').value=curYM();
+  document.getElementById('up-s1').style.display='block';document.getElementById('up-s2').style.display='none';
+  document.getElementById('up-confirm').style.display='none';document.getElementById('up-back').style.display='none';
+  document.getElementById('fi').value='';document.getElementById('up-modal').classList.add('open');
+}
+function closeUp(){document.getElementById('up-modal').classList.remove('open');}
+function resetUp(){document.getElementById('up-s1').style.display='block';document.getElementById('up-s2').style.display='none';document.getElementById('up-confirm').style.display='none';document.getElementById('up-back').style.display='none';document.getElementById('fi').value='';upData=[];}
+function handleDrop(e){e.preventDefault();document.getElementById('drop-zone').classList.remove('drag');const f=e.dataTransfer.files[0];if(f)parseXL(f);}
+function handleFile(e){const f=e.target.files[0];if(f)parseXL(f);}
+function parseXL(file){
+  const ym=document.getElementById('up-ym').value;if(!ym){toast('먼저 기준 월을 선택해 주세요','err');return;}
+  const rd=new FileReader();
+  rd.onload=function(e){
+    try{
+      const wb=XLSX.read(e.target.result,{type:'binary',cellDates:true});
+      const ws=wb.Sheets[wb.SheetNames[0]];const raw=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+      if(raw.length<2){toast('데이터 없음','err');return;}
+      const hdr=raw[0].map(h=>String(h).trim());const map=UP_MAP[upType];
+      upData=raw.slice(1).filter(row=>row.some(c=>c!=='')).map(row=>{
+        const item={snapshot_ym:ym};
+        map.forEach(m=>{const idx=hdr.indexOf(m.e);if(idx===-1){item[m.d]=null;return;}let v=row[idx];if(v instanceof Date)v=v.toISOString().slice(0,10);else v=String(v||'').trim()||null;item[m.d]=v;});
+        return item;
+      }).filter(r=>Object.values(r).some(v=>v&&v!==r.snapshot_ym));
+      if(!upData.length){toast('유효한 데이터 없음','err');return;}
+      document.getElementById('up-s1').style.display='none';document.getElementById('up-s2').style.display='block';
+      document.getElementById('up-confirm').style.display='inline-flex';document.getElementById('up-back').style.display='inline-flex';
+      document.getElementById('up-info').textContent=`기준월 [${ym}] · 총 ${upData.length}건 감지됨`;
+      const dh=hdr.slice(0,7);let h='<thead><tr>'+dh.map(h=>`<th>${h}</th>`).join('')+'</tr></thead><tbody>';
+      raw.slice(1,11).filter(r=>r.some(c=>c!=='')).forEach(row=>{h+='<tr>'+dh.map((_,i)=>`<td>${row[i]||''}</td>`).join('')+'</tr>';});
+      document.getElementById('preview-tbl').innerHTML=h+'</tbody>';
+    }catch(err){toast('파싱 오류: '+err.message,'err');}
+  };
+  rd.readAsBinaryString(file);
+}
+async function confirmUp(){
+  if(!upData.length){toast('데이터 없음','err');return;}
+  const btn=document.getElementById('up-confirm');btn.disabled=true;showL(`${upData.length}건 업로드 중...`);
+  try{
+    for(let i=0;i<upData.length;i+=50){const{error}=await db.from(TAB_TBL[upType]).insert(upData.slice(i,i+50));if(error)throw error;}
+    closeUp();toast(`${upData.length}건 업로드 완료!`,'ok');await loadAll();
+  }catch(e){toast('업로드 실패: '+(e.message||e),'err');}btn.disabled=false;hideL();
+}
+
+// ============================================================
+// 전체 내보내기
+// ============================================================
+function doExport(){
+  const tabs=['lease','ins','veh','oa','other','dveh','dpc','dprinter','dplotter'];
+  const wb=XLSX.utils.book_new();
+  tabs.forEach(t=>{
+    const rows=getR(t);if(!rows.length)return;
+    const cols=SCHEMAS[t].cols.filter(c=>!c.k.startsWith('_'));
+    const hdr=cols.map(c=>c.l);const data=rows.map(r=>cols.map(c=>r[c.k]??''));
+    const ws=XLSX.utils.aoa_to_sheet([hdr,...data]);ws['!cols']=hdr.map(()=>({wch:16}));
+    XLSX.utils.book_append_sheet(wb,ws,SCHEMAS[t].label);
+  });
+  XLSX.writeFile(wb,'팀자산관리현황_'+new Date().toISOString().slice(0,10)+'.xlsx');toast('내보내기 완료','ok');
+}
+
+document.getElementById('add-ym').value=curYM();
+</script>
+</body>
+</html>
