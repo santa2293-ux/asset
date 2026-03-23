@@ -112,8 +112,56 @@ input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:var(--bl
 .col-resizer::after{content:'';position:absolute;right:4px;top:20%;bottom:20%;width:2px;background:var(--border);border-radius:1px}
 .col-resizer:hover::after,.col-resizer.drag::after{background:var(--blue)}
 
-/* 모바일 최적화 */
+/* ── 새 대시보드 ── */
+.dash-section{margin-bottom:24px}
+.dash-section-title{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:15px;font-weight:700;color:var(--text)}
+.dash-section-sub{font-size:12px;font-weight:400;color:var(--muted)}
+
+/* 월 비용 합계 카드 */
+.cost-total-card{background:linear-gradient(135deg,#1a73e8,#6200ea);border-radius:var(--r);padding:20px 24px;margin-bottom:12px;color:#fff;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.cost-total-label{font-size:13px;font-weight:600;opacity:.85;margin-bottom:4px}
+.cost-total-val{font-size:36px;font-weight:800;line-height:1}
+.cost-total-unit{font-size:16px;font-weight:400;opacity:.8;margin-left:4px}
+.cost-total-sub{font-size:12px;opacity:.7;margin-top:4px}
+.cost-total-badges{display:flex;gap:8px;flex-wrap:wrap}
+.cost-total-badge{background:rgba(255,255,255,.18);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600}
+
+/* 항목별 월비용 카드 */
+.cost-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:4px}
+.cost-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;position:relative;overflow:hidden;transition:box-shadow .15s}
+.cost-item:hover{box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.cost-item-bar{position:absolute;left:0;top:0;bottom:0;width:4px}
+.cost-item-label{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;letter-spacing:.3px}
+.cost-item-val{font-size:22px;font-weight:700;line-height:1;color:var(--text)}
+.cost-item-unit{font-size:12px;color:var(--muted);margin-left:2px}
+.cost-item-sub{font-size:11px;color:var(--muted);margin-top:4px}
+
+/* 항목별 요약 카드 */
+.summary-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);margin-bottom:12px;overflow:hidden}
+.sc-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px}
+.sc-title{font-size:14px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px}
+.sc-title-bar{width:4px;height:18px;border-radius:2px;flex-shrink:0}
+.sc-stats{display:flex;gap:16px;flex-wrap:wrap}
+.sc-stat{text-align:center}
+.sc-stat-val{font-size:20px;font-weight:700;line-height:1}
+.sc-stat-label{font-size:10px;color:var(--muted);margin-top:2px}
+.sc-body{padding:14px 18px}
+.sc-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)}
+.sc-row:last-child{border-bottom:none;padding-bottom:0}
+.sc-row-label{font-size:12px;color:var(--muted);min-width:80px}
+.sc-row-val{font-size:13px;font-weight:600;color:var(--text)}
+.sc-row-bar-wrap{flex:1;margin:0 12px;background:var(--subtle);border-radius:3px;height:6px;overflow:hidden}
+.sc-row-bar-fill{height:100%;border-radius:3px;transition:width .4s}
+
+/* 만료임박 알림 */
+.expiry-chip{display:inline-flex;align-items:center;gap:5px;background:var(--red-bg);color:var(--red);border-radius:6px;padding:3px 8px;font-size:11px;font-weight:600;margin-top:8px;flex-wrap:wrap}
+.expiry-chip.warn{background:var(--orange-bg);color:var(--orange)}
+
 @media(max-width:640px){
+  .cost-total-val{font-size:28px}
+  .cost-grid{grid-template-columns:repeat(2,1fr)}
+  .sc-stats{gap:10px}
+}
   .logo-sub{display:none}
   header{padding:10px 12px}
   .hact .btn:not(.btn-primary){display:none}
@@ -286,42 +334,29 @@ input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:var(--bl
 
 <!-- ===== 대시보드 ===== -->
 <div id="pane-dash" class="pane active">
-  <div class="dash-header">
-    <div style="font-size:16px;font-weight:700">대시보드</div>
-    <button class="btn btn-icon" id="ws-toggle-btn" onclick="toggleWS()" title="위젯 설정">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-      위젯 설정
-    </button>
-  </div>
-  <div class="widget-settings" id="ws-panel">
-    <div style="font-size:13px;font-weight:700">보고 싶은 위젯을 선택하세요</div>
-    <div class="ws-grid" id="ws-grid"></div>
-    <div style="margin-top:12px;display:flex;gap:8px">
-      <button class="btn btn-sm btn-primary" onclick="wsAll()">전체 선택</button>
-      <button class="btn btn-sm" onclick="wsNone()">전체 해제</button>
+  <div style="font-size:16px;font-weight:700;margin-bottom:16px">대시보드</div>
+
+  <!-- ① 월 비용 한눈에 보기 -->
+  <div class="dash-section">
+    <div class="dash-section-title">
+      <span>💰 월 비용 현황</span>
+      <span class="dash-section-sub">전체 항목 합산</span>
     </div>
+    <div class="cost-total-card" id="cost-total-card"></div>
+    <div class="cost-grid" id="cost-grid"></div>
   </div>
-  <div id="w-kpi"><div class="kpi-row" id="kpi-row"></div></div>
-  <div id="w-charts">
-    <div class="grid2" style="margin-bottom:12px">
-      <div class="widget" id="w-status"><div class="wtitle">계약 상태 현황</div><div class="wsub">전체 합산</div><div class="legend" id="st-legend"></div><div style="position:relative;height:160px"><canvas id="stChart"></canvas></div></div>
-      <div class="widget" id="w-veh"><div class="wtitle">차량 구분별 현황</div><div class="wsub">6개 구분</div><div class="legend" id="veh-legend"></div><div style="position:relative;height:160px"><canvas id="vehChart"></canvas></div></div>
-      <div class="widget" id="w-cost"><div class="wtitle">카테고리별 월 비용</div><div class="wsub">단위: 만원</div><div style="position:relative;height:180px"><canvas id="costChart"></canvas></div></div>
-      <div class="widget" id="w-lease-chart"><div class="wtitle">임대차 구분별 임차료</div><div class="wsub">단위: 만원</div><div style="position:relative;height:180px"><canvas id="leaseChart"></canvas></div></div>
+
+  <!-- ② 항목별 요약 -->
+  <div class="dash-section">
+    <div class="dash-section-title">
+      <span>📋 항목별 요약</span>
+      <span class="dash-section-sub">건수 · 비용 · 만료현황 · 구분별 현황</span>
     </div>
-  </div>
-  <div id="w-summary">
-    <div class="grid3">
-      <div class="widget"><div class="wtitle">카테고리별 요약</div><div class="wsub" style="margin-bottom:8px">건수 · 상태 · 월 비용</div><div id="cat-summary"></div></div>
-      <div class="widget"><div class="wtitle">만료 예정 알림</div><div class="wsub" style="margin-bottom:8px">90일 이내</div><div id="expiry-list"></div></div>
-    </div>
-  </div>
-  <div id="w-trend">
-    <div class="widget" style="margin-bottom:12px"><div class="wtitle">월별 비용 추이</div><div class="wsub">기준월별 카테고리별 월 지출 (단위: 만원)</div><div style="position:relative;height:220px"><canvas id="trendCostChart"></canvas></div></div>
-    <div class="grid2">
-      <div class="widget"><div class="wtitle">월별 계약 건수 추이</div><div class="wsub">기준월별 전체 건수</div><div style="position:relative;height:180px"><canvas id="trendCountChart"></canvas></div></div>
-      <div class="widget"><div class="wtitle">월별 상세 현황표</div><div class="wsub">핵심 지표 비교</div><div style="overflow-x:auto"><table class="trend-table" id="trend-table"></table></div></div>
-    </div>
+    <div id="summary-lease" class="summary-card"></div>
+    <div id="summary-ins" class="summary-card"></div>
+    <div id="summary-veh" class="summary-card"></div>
+    <div id="summary-oa" class="summary-card"></div>
+    <div id="summary-other" class="summary-card"></div>
   </div>
 </div>
 
@@ -507,31 +542,18 @@ input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:var(--bl
 const SURL='https://txyzpgcwtmfsilgkxldw.supabase.co';
 const SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR4eXpwZ2N3dG1mc2lsZ2t4bGR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4OTU2OTMsImV4cCI6MjA4OTQ3MTY5M30.E2164GxBbdQejPWSoF1HJi3gpvqRMhvgT9wYo9xe9Ao';
 
+// db는 페이지 로드 완료 후 초기화됨
 var db = null;
 
-function getDB(){
-  if(!db){
-    if(!window.supabase || !window.supabase.createClient){
-      throw new Error('라이브러리 로딩 중입니다. 잠시 후 다시 시도해주세요.');
-    }
-    db = window.supabase.createClient(SURL, SKEY);
-  }
-  return db;
-}
-
-// 라이브러리 로딩 완료까지 대기 후 Auth 초기화
-// Auth 초기화 - window.load 후 실행
 window.addEventListener('load', function(){
-  try{
-    db = window.supabase.createClient(SURL, SKEY);
-    db.auth.onAuthStateChange(function(event, session){
-      setUserUI(session ? session.user : null);
-      if(session && session.user){ loadAll(); }
-    });
-  }catch(e){
-    console.error('초기화 오류:', e);
-  }
+  db = window.supabase.createClient(SURL, SKEY);
+  db.auth.onAuthStateChange(function(event, session){
+    setUserUI(session ? session.user : null);
+    if(session && session.user){ loadAll(); }
+  });
 });
+
+function getDB(){ return db; }
 
 // ============================================================
 // 로그인 / 인증
@@ -553,12 +575,12 @@ async function doLogin(){
   const errEl=document.getElementById('li-err');
   const btn=document.getElementById('li-btn');
   if(!email||!pw){errEl.textContent='이메일과 비밀번호를 입력해주세요.';return;}
+  if(!db){errEl.textContent='초기화 중입니다. 잠시 후 다시 시도해주세요.';return;}
   btn.disabled=true;
   btn.textContent='로그인 중...';
   errEl.textContent='';
   try{
-    const client=getDB();
-    const result=await client.auth.signInWithPassword({email:email,password:pw});
+    const result=await db.auth.signInWithPassword({email:email,password:pw});
     if(result.error){
       let msg='로그인에 실패했습니다. ('+result.error.message+')';
       if(result.error.message.includes('Invalid login')) msg='이메일 또는 비밀번호가 올바르지 않습니다.';
@@ -583,7 +605,7 @@ async function doReg(){
   if(pw.length<6){errEl.textContent='비밀번호는 6자 이상이어야 합니다.';return;}
   if(pw!==pw2){errEl.textContent='비밀번호가 일치하지 않습니다.';return;}
   btn.disabled=true;btn.textContent='가입 중...';errEl.textContent='';
-  const{error}=await getDB().auth.signUp({
+  const{error}=await db.auth.signUp({
     email,password:pw,
     options:{data:{full_name:name||email.split('@')[0]}}
   });
@@ -598,7 +620,7 @@ async function doReg(){
 }
 
 async function doSignout(){
-  await getDB().auth.signOut();
+  await db.auth.signOut();
 }
 
 function setUserUI(user){
@@ -810,15 +832,15 @@ async function loadAll(){
   showL('데이터 불러오는 중...');
   try{
     const res=await Promise.all([
-      getDB().from('lease').select('*').order('snapshot_ym',{ascending:false}).order('created_at'),
-      getDB().from('insurance').select('*').order('snapshot_ym',{ascending:false}).order('created_at'),
-      getDB().from('vehicle').select('*').order('snapshot_ym',{ascending:false}).order('created_at'),
-      getDB().from('oa_rental').select('*').order('snapshot_ym',{ascending:false}).order('created_at'),
-      getDB().from('other_rental').select('*').order('snapshot_ym',{ascending:false}).order('created_at'),
-      getDB().from('detail_vehicle').select('*').order('snapshot_ym',{ascending:false}).order('seq'),
-      getDB().from('detail_pc').select('*').order('snapshot_ym',{ascending:false}).order('seq'),
-      getDB().from('detail_printer').select('*').order('snapshot_ym',{ascending:false}).order('seq'),
-      getDB().from('detail_plotter').select('*').order('snapshot_ym',{ascending:false}).order('seq'),
+      db.from('lease').select('*').order('snapshot_ym',{ascending:false}).order('created_at'),
+      db.from('insurance').select('*').order('snapshot_ym',{ascending:false}).order('created_at'),
+      db.from('vehicle').select('*').order('snapshot_ym',{ascending:false}).order('created_at'),
+      db.from('oa_rental').select('*').order('snapshot_ym',{ascending:false}).order('created_at'),
+      db.from('other_rental').select('*').order('snapshot_ym',{ascending:false}).order('created_at'),
+      db.from('detail_vehicle').select('*').order('snapshot_ym',{ascending:false}).order('seq'),
+      db.from('detail_pc').select('*').order('snapshot_ym',{ascending:false}).order('seq'),
+      db.from('detail_printer').select('*').order('snapshot_ym',{ascending:false}).order('seq'),
+      db.from('detail_plotter').select('*').order('snapshot_ym',{ascending:false}).order('seq'),
     ]);
     if(res[0].error)throw res[0].error;
     const keys=['lease','insurance','vehicle','oa_rental','other_rental','detail_vehicle','detail_pc','detail_printer','detail_plotter'];
@@ -1067,13 +1089,13 @@ async function bulkDel(t){
   const ids=[...document.querySelectorAll(`#t-${t} .row-chk:checked`)].map(c=>c.dataset.id);
   if(!ids.length)return;if(!confirm(`${ids.length}건을 삭제하시겠습니까?`))return;
   showL(`${ids.length}건 삭제 중...`);
-  try{const{error}=await getDB().from(TAB_TBL[t]).delete().in('id',ids);if(error)throw error;toast(`${ids.length}건 삭제됨`,'ok');await loadAll();}
+  try{const{error}=await db.from(TAB_TBL[t]).delete().in('id',ids);if(error)throw error;toast(`${ids.length}건 삭제됨`,'ok');await loadAll();}
   catch(e){toast('삭제 실패: '+(e.message||e),'err');}hideL();
 }
 async function bulkDelDetail(t){return bulkDel(t);}
 async function singleDel(t,id){
   if(!confirm('삭제하시겠습니까?'))return;showL('삭제 중...');
-  try{const{error}=await getDB().from(TAB_TBL[t]).delete().eq('id',id);if(error)throw error;toast('삭제됨','ok');await loadAll();}
+  try{const{error}=await db.from(TAB_TBL[t]).delete().eq('id',id);if(error)throw error;toast('삭제됨','ok');await loadAll();}
   catch(e){toast('삭제 실패: '+(e.message||e),'err');}hideL();
 }
 
@@ -1081,48 +1103,125 @@ async function singleDel(t,id){
 // 대시보드
 // ============================================================
 function renderDash(){
-  const tabs=['lease','ins','veh','oa','other'];
-  let total=0,ok=0,warn=0,danger=0;
-  tabs.forEach(t=>getR(t).forEach(r=>{total++;const n=dl(r.end_date);if(n<0)danger++;else if(n<=90)warn++;else ok++;}));
   const lM=DB.lease.reduce((s,r)=>s+Number(r.rent||0),0);
+  const iM=DB.insurance.reduce((s,r)=>s+Number(r.amount||0),0);
   const vM=DB.vehicle.reduce((s,r)=>s+Number(r.monthly_fee||0),0);
   const oM=DB.oa_rental.reduce((s,r)=>s+Number(r.monthly_fee||0),0);
   const rM=DB.other_rental.reduce((s,r)=>s+Number(r.monthly_fee||0),0);
-  const tM=lM+vM+oM+rM;
+  const tM=lM+iM+vM+oM+rM;
 
-  document.getElementById('kpi-row').innerHTML=`
-    <div class="kpi blue"><div class="kpi-bar"></div><div class="kpi-label">전체 계약</div><div class="kpi-val">${total}<span class="kpi-unit">건</span></div><div class="kpi-sub">5개 카테고리</div></div>
-    <div class="kpi purple"><div class="kpi-bar"></div><div class="kpi-label">월 지출 합계</div><div class="kpi-val">${toMan(tM).toLocaleString()}<span class="kpi-unit">만원</span></div><div class="kpi-sub">임대차·차량·렌탈</div></div>
-    <div class="kpi green"><div class="kpi-bar"></div><div class="kpi-label">정상 계약</div><div class="kpi-val" style="color:var(--green)">${ok}<span class="kpi-unit">건</span></div><div class="kpi-sub">90일 이상 남음</div></div>
-    <div class="kpi orange"><div class="kpi-bar"></div><div class="kpi-label">만료임박</div><div class="kpi-val" style="color:var(--orange)">${warn}<span class="kpi-unit">건</span></div><div class="kpi-sub">90일 이내</div></div>
-    <div class="kpi red"><div class="kpi-bar"></div><div class="kpi-label">만료</div><div class="kpi-val" style="color:var(--red)">${danger}<span class="kpi-unit">건</span></div><div class="kpi-sub">이미 만료</div></div>
-  `;
-  document.getElementById('st-legend').innerHTML=[['정상',ok,'#188038'],['만료임박',warn,'#e37400'],['만료',danger,'#d32f2f']].map(([l,n,c])=>`<div class="leg-item"><div class="leg-dot" style="background:${c}"></div>${l} ${n}건</div>`).join('');
-  mkChart('stChart','doughnut',['정상','만료임박','만료'],[ok,warn,danger],['#188038','#e37400','#d32f2f']);
-  const vC=['임원용','본사공용','본부및지사','도매센터','법인센터','프론티어'];
-  const vCol=['#1a73e8','#188038','#888','#6200ea','#e37400','#d32f2f'];
-  const vN=vC.map(c=>DB.vehicle.filter(r=>r.cat===c).length);
-  document.getElementById('veh-legend').innerHTML=vC.map((c,i)=>`<div class="leg-item"><div class="leg-dot" style="background:${vCol[i]}"></div>${c} ${vN[i]}대</div>`).join('');
-  mkChart('vehChart','doughnut',vC,vN,vCol);
-  mkChart('costChart','bar',['임대차','차량','OA렌탈','기타렌탈'],[toMan(lM),toMan(vM),toMan(oM),toMan(rM)],['#1a73e8','#188038','#6200ea','#e37400']);
-  const lC=['본사','강북영업본부','강남영업본부','강서영업본부','동부영업본부','서부영업본부','영업센터','물류센터','사택'];
-  mkChart('leaseChart','bar',lC,lC.map(c=>toMan(DB.lease.filter(r=>r.cat===c).reduce((s,r)=>s+Number(r.rent||0),0))),['#1a73e8','#188038','#188038','#188038','#188038','#188038','#e37400','#888','#6200ea']);
-  document.getElementById('cat-summary').innerHTML=tabs.map(t=>{
-    const rows=getR(t);let o=0,w=0,d=0;
-    rows.forEach(r=>{const n=dl(r.end_date);if(n<0)d++;else if(n<=90)w++;else o++;});
-    let mon=0;if(t==='lease')mon=lM;else if(t==='veh')mon=vM;else if(t==='oa')mon=oM;else if(t==='other')mon=rM;
-    return `<div class="cat-row"><div style="min-width:68px;font-size:13px;font-weight:700">${SCHEMAS[t].label}</div><div style="min-width:36px;font-size:12px;color:var(--muted)">${rows.length}건</div><div style="flex:1;display:flex;gap:5px;flex-wrap:wrap"><span class="badge ok">정상 ${o}</span>${w>0?`<span class="badge warn">임박 ${w}</span>`:''}${d>0?`<span class="badge danger">만료 ${d}</span>`:''}</div><div style="font-size:12px;color:var(--muted);min-width:80px;text-align:right">${mon>0?'월 '+toMan(mon).toLocaleString()+'만':'-'}</div></div>`;
-  }).join('');
-  const exp=[];
-  tabs.forEach(t=>getR(t).forEach(r=>{const n=dl(r.end_date);if(n<=90)exp.push({...r,_t:t,_label:SCHEMAS[t].label,_d:n});}));
-  exp.sort((a,b)=>a._d-b._d);
-  const expEl=document.getElementById('expiry-list');
-  if(!exp.length){expEl.innerHTML='<div style="text-align:center;padding:18px;font-size:13px;color:var(--muted)">90일 이내 만료 없음</div>';}
-  else expEl.innerHTML=exp.slice(0,12).map(item=>{
-    const b=stb(item.end_date);const name=item.org||item.ins_type||item.car_no||item.item||item.cat||'—';
-    return `<div class="tl-item"><span class="badge ${b.c}" style="min-width:46px;text-align:center">${b.t}</span><span style="font-size:10px;font-weight:700;padding:2px 5px;border-radius:3px;background:var(--subtle);color:var(--muted);white-space:nowrap">${item._label}</span><span style="flex:1;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</span><span style="font-size:11px;color:var(--muted);white-space:nowrap">${item.end_date||''}</span></div>`;
-  }).join('')+(exp.length>12?`<div style="text-align:center;padding:8px;font-size:11px;color:var(--muted)">외 ${exp.length-12}건</div>`:'');
-  renderTrend();applyWS();
+  // ① 월 비용 합계 카드
+  const totalCnt=DB.lease.length+DB.insurance.length+DB.vehicle.length+DB.oa_rental.length+DB.other_rental.length;
+  document.getElementById('cost-total-card').innerHTML=`
+    <div>
+      <div class="cost-total-label">전체 월 지출 합계</div>
+      <div class="cost-total-val">${toMan(tM).toLocaleString()}<span class="cost-total-unit">만원</span></div>
+      <div class="cost-total-sub">총 ${totalCnt.toLocaleString()}건 · 5개 항목</div>
+    </div>
+    <div class="cost-total-badges">
+      <div class="cost-total-badge">임대차 ${toMan(lM).toLocaleString()}만</div>
+      <div class="cost-total-badge">보험 ${toMan(iM).toLocaleString()}만</div>
+      <div class="cost-total-badge">차량 ${toMan(vM).toLocaleString()}만</div>
+      <div class="cost-total-badge">OA ${toMan(oM).toLocaleString()}만</div>
+      <div class="cost-total-badge">기타 ${toMan(rM).toLocaleString()}만</div>
+    </div>`;
+
+  // ① 항목별 월 비용 카드
+  const costItems=[
+    {label:'임대차',mon:lM,cnt:DB.lease.length,color:'#1a73e8',sub:'임차료 기준'},
+    {label:'보험계약',mon:iM,cnt:DB.insurance.length,color:'#188038',sub:'월 환산'},
+    {label:'차량',mon:vM,cnt:DB.vehicle.length,color:'#e37400',sub:'월 대여료'},
+    {label:'OA렌탈',mon:oM,cnt:DB.oa_rental.length,color:'#6200ea',sub:'월 렌탈료'},
+    {label:'기타렌탈',mon:rM,cnt:DB.other_rental.length,color:'#d32f2f',sub:'월 렌탈료'},
+  ];
+  document.getElementById('cost-grid').innerHTML=costItems.map(it=>`
+    <div class="cost-item">
+      <div class="cost-item-bar" style="background:${it.color}"></div>
+      <div class="cost-item-label">${it.label}</div>
+      <div class="cost-item-val">${toMan(it.mon).toLocaleString()}<span class="cost-item-unit">만원</span></div>
+      <div class="cost-item-sub">${it.cnt}건 · ${it.sub}</div>
+    </div>`).join('');
+
+  // ② 항목별 요약 카드
+  renderSummaryCard('lease','임대차','#1a73e8',DB.lease,lM,
+    r=>r.cat, ['본사','강북영업본부','강남영업본부','강서영업본부','동부영업본부','서부영업본부','영업센터','물류센터','사택'],
+    r=>Number(r.rent||0), '임차료');
+
+  renderSummaryCard('ins','보험계약','#188038',DB.insurance,iM,
+    r=>r.ins_type, ['임원배상책임보험','임직원 단체상해보험','재산종합보험(화재보험)'],
+    r=>Number(r.amount||0), '보험료');
+
+  renderSummaryCard('veh','차량','#e37400',DB.vehicle,vM,
+    r=>r.cat, ['임원용','본사공용','본부및지사','도매센터','법인센터','프론티어'],
+    r=>Number(r.monthly_fee||0), '월대여료');
+
+  renderSummaryCard('oa','OA렌탈','#6200ea',DB.oa_rental,oM,
+    r=>r.item, ['PC본체','노트북','프린터(컬러)','대형복합기','플로터'],
+    r=>Number(r.monthly_fee||0), '렌탈료');
+
+  renderSummaryCard('other','기타렌탈','#d32f2f',DB.other_rental,rM,
+    r=>r.cat, ['정수기','비데','공기청정기'],
+    r=>Number(r.monthly_fee||0), '렌탈료');
+}
+
+function renderSummaryCard(id, label, color, rows, totalMon, catFn, cats, monFn, monLabel){
+  // 상태 계산
+  let ok=0,warn=0,danger=0;
+  rows.forEach(r=>{
+    const n=dl(r.end_date);
+    if(r.end_date){if(n<0)danger++;else if(n<=90)warn++;else ok++;}
+    else ok++;
+  });
+
+  // 만료임박 목록
+  const expItems=rows.filter(r=>r.end_date&&dl(r.end_date)<=90).sort((a,b)=>dl(a.end_date)-dl(b.end_date)).slice(0,3);
+
+  // 구분별 현황
+  const catData=cats.map(c=>{
+    const filtered=rows.filter(r=>catFn(r)===c);
+    return{c,cnt:filtered.length,mon:filtered.reduce((s,r)=>s+monFn(r),0)};
+  }).filter(d=>d.cnt>0);
+  const maxMon=catData.length?Math.max(...catData.map(d=>d.mon)):1;
+
+  const el=document.getElementById('summary-'+id);
+  if(!el)return;
+
+  el.innerHTML=`
+    <div class="sc-head">
+      <div class="sc-title">
+        <div class="sc-title-bar" style="background:${color}"></div>
+        ${label}
+      </div>
+      <div class="sc-stats">
+        <div class="sc-stat"><div class="sc-stat-val" style="color:${color}">${rows.length}</div><div class="sc-stat-label">전체 건수</div></div>
+        <div class="sc-stat"><div class="sc-stat-val" style="color:${color}">${toMan(totalMon).toLocaleString()}만</div><div class="sc-stat-label">월 ${monLabel}</div></div>
+        <div class="sc-stat"><div class="sc-stat-val" style="color:var(--orange)">${warn}</div><div class="sc-stat-label">만료임박</div></div>
+        <div class="sc-stat"><div class="sc-stat-val" style="color:var(--red)">${danger}</div><div class="sc-stat-label">만료</div></div>
+      </div>
+    </div>
+    <div class="sc-body">
+      ${catData.length?`
+        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px;letter-spacing:.3px">구분별 현황</div>
+        ${catData.map(d=>`
+          <div class="sc-row">
+            <div class="sc-row-label">${d.c}</div>
+            <div class="sc-row-bar-wrap"><div class="sc-row-bar-fill" style="width:${Math.round(d.mon/maxMon*100)}%;background:${color}22;border:1px solid ${color}44"></div></div>
+            <div class="sc-row-val">${d.cnt}건${d.mon?` · ${toMan(d.mon).toLocaleString()}만`:''}</div>
+          </div>`).join('')}
+      `:'<div style="color:var(--muted);font-size:12px;padding:4px 0">데이터가 없습니다</div>'}
+      ${expItems.length?`
+        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-top:12px;margin-bottom:6px;letter-spacing:.3px">만료 임박 (90일 이내)</div>
+        ${expItems.map(r=>{
+          const b=stb(r.end_date);
+          const name=r.org||r.ins_type||r.car_no||r.item||r.cat||'—';
+          return `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px">
+            <span class="badge ${b.c}" style="min-width:44px;text-align:center">${b.t}</span>
+            <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</span>
+            <span style="color:var(--muted);white-space:nowrap">${r.end_date}</span>
+          </div>`;
+        }).join('')}
+      `:''}
+    </div>`;
 }
 function renderTrend(){
   const allRows=[...DB.lease,...DB.insurance,...DB.vehicle,...DB.oa_rental,...DB.other_rental];
@@ -1180,7 +1279,7 @@ async function saveAdd(){
   });
   if(!valid){toast('* 표시 항목은 필수입니다','err');return;}
   const btn=document.getElementById('add-save');btn.disabled=true;showL('저장 중...');
-  try{const{error}=await getDB().from(TAB_TBL[addType]).insert(item);if(error)throw error;closeAdd();toast('저장되었습니다','ok');await loadAll();}
+  try{const{error}=await db.from(TAB_TBL[addType]).insert(item);if(error)throw error;closeAdd();toast('저장되었습니다','ok');await loadAll();}
   catch(e){toast('저장 실패: '+(e.message||e),'err');}btn.disabled=false;hideL();
 }
 
@@ -1249,7 +1348,7 @@ async function confirmUp(){
   if(!upData.length){toast('데이터 없음','err');return;}
   const btn=document.getElementById('up-confirm');btn.disabled=true;showL(`${upData.length}건 업로드 중...`);
   try{
-    for(let i=0;i<upData.length;i+=50){const{error}=await getDB().from(TAB_TBL[upType]).insert(upData.slice(i,i+50));if(error)throw error;}
+    for(let i=0;i<upData.length;i+=50){const{error}=await db.from(TAB_TBL[upType]).insert(upData.slice(i,i+50));if(error)throw error;}
     closeUp();toast(`${upData.length}건 업로드 완료!`,'ok');await loadAll();
   }catch(e){toast('업로드 실패: '+(e.message||e),'err');}btn.disabled=false;hideL();
 }
