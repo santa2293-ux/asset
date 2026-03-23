@@ -91,9 +91,9 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .search:focus{outline:none;border-color:var(--blue)}
 select.fil{padding:7px 11px;border:1px solid var(--border);border-radius:var(--rs);font-size:13px;font-family:inherit;background:var(--surface);color:var(--text);cursor:pointer}
 
-.resize-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;position:relative}
+.resize-wrap{overflow-x:auto;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;max-height:calc(100vh - 220px)}
 .rtable{border-collapse:collapse;font-size:12px;table-layout:fixed;width:100%}
-.rtable th{padding:0;text-align:left;font-weight:700;font-size:11px;color:var(--muted);border-bottom:1px solid var(--border);background:var(--subtle);position:sticky;top:100px;z-index:5;overflow:visible;user-select:none}
+.rtable th{padding:0;text-align:left;font-weight:700;font-size:11px;color:var(--muted);border-bottom:1px solid var(--border);background:var(--subtle);position:sticky;top:0;z-index:5;overflow:visible;user-select:none}
 .rtable th .thi{display:block;padding:9px 22px 9px 12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rtable td{padding:9px 12px;border-bottom:1px solid var(--border);color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;max-width:0}
 .rtable td.r{text-align:right;font-variant-numeric:tabular-nums}
