@@ -91,9 +91,9 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .search:focus{outline:none;border-color:var(--blue)}
 select.fil{padding:7px 11px;border:1px solid var(--border);border-radius:var(--rs);font-size:13px;font-family:inherit;background:var(--surface);color:var(--text);cursor:pointer}
 
-.resize-wrap{overflow-x:auto;overflow-y:auto;-webkit-overflow-scrolling:touch;position:relative;max-height:calc(100vh - 210px)}
+.resize-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;position:relative}
 .rtable{border-collapse:collapse;font-size:12px;table-layout:fixed;width:100%}
-.rtable th{padding:0;text-align:left;font-weight:700;font-size:11px;color:var(--muted);border-bottom:1px solid var(--border);background:var(--subtle);position:sticky;top:0;z-index:2;overflow:visible;user-select:none}
+.rtable th{padding:0;text-align:left;font-weight:700;font-size:11px;color:var(--muted);border-bottom:1px solid var(--border);background:var(--subtle);position:sticky;top:100px;z-index:5;overflow:visible;user-select:none}
 .rtable th .thi{display:block;padding:9px 22px 9px 12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rtable td{padding:9px 12px;border-bottom:1px solid var(--border);color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;max-width:0}
 .rtable td.r{text-align:right;font-variant-numeric:tabular-nums}
@@ -205,36 +205,8 @@ input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:var(--bl
 .fg.full{grid-column:1/-1}
 .mfooter{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)}
 
-/* 위젯 설정 */
-.widget-settings{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;margin-bottom:14px;display:none}
-.widget-settings.open{display:block}
-.ws-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-top:10px}
-.ws-item{display:flex;align-items:center;gap:8px;padding:9px 12px;border:1px solid var(--border);border-radius:var(--rs);cursor:pointer;transition:all .15s;user-select:none}
-.ws-item:hover{background:var(--subtle)}.ws-item.on{border-color:var(--blue);background:var(--blue-bg)}
-.ws-item.on .ws-chk{background:var(--blue);border-color:var(--blue);color:#fff}
-.ws-chk{width:16px;height:16px;border-radius:3px;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;transition:all .15s}
-.ws-label{font-size:12px;font-weight:500}
-
-/* 대시보드 필터 패널 */
-.dash-filter-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:12px;display:none}
-.dash-filter-panel.open{display:block}
-.dfp-title{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px;letter-spacing:.3px}
-.dfp-chips{display:flex;flex-wrap:wrap;gap:6px}
-.dfp-chip{padding:4px 12px;border-radius:20px;border:1.5px solid var(--border);background:var(--surface);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;user-select:none}
-.dfp-chip:hover{border-color:var(--blue);color:var(--blue)}
-.dfp-chip.on{background:var(--blue);border-color:var(--blue);color:#fff}
-.dfp-actions{display:flex;gap:6px;margin-top:10px}
-
-/* 편집 모달 */
-.detail-edit-row{display:flex;border-bottom:1px solid var(--border)}
-.detail-edit-row:last-child{border-bottom:none}
-.de-label{font-size:11px;font-weight:700;color:var(--muted);background:var(--subtle);padding:8px 12px;min-width:130px;flex-shrink:0;display:flex;align-items:center;border-right:1px solid var(--border)}
-.de-val{padding:6px 10px;flex:1}
-.de-val input,.de-val select,.de-val textarea{width:100%;padding:6px 9px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit;background:var(--surface);color:var(--text)}
-.de-val input:focus,.de-val select:focus,.de-val textarea:focus{outline:none;border-color:var(--blue)}
-.de-val.ro{font-size:13px;color:var(--text);padding:10px 12px;word-break:break-all}
-.de-val.ro.hl{color:#0c6c9a;font-weight:600}
-.detail-mode-btns{display:flex;gap:6px;margin-left:auto}
+/* 세부내역 팝업 */
+.detail-grid{border:1px solid var(--border);border-radius:var(--rs);overflow:hidden}
 .detail-row{display:flex;border-bottom:1px solid var(--border)}
 .detail-row:last-child{border-bottom:none}
 .d-label{font-size:11px;font-weight:700;color:var(--muted);background:var(--subtle);padding:10px 12px;min-width:130px;flex-shrink:0;display:flex;align-items:flex-start;border-right:1px solid var(--border)}
@@ -364,40 +336,40 @@ input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:var(--bl
 <div id="pane-dash" class="pane active">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
     <div style="font-size:16px;font-weight:700">대시보드</div>
-    <button class="btn btn-icon" onclick="toggleDashWS()" id="dash-ws-btn" title="위젯 설정">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-      위젯 설정
-    </button>
+    <button class="btn" id="ws-btn" onclick="toggleWS()">⚙️ 위젯 설정</button>
   </div>
-
   <!-- 위젯 설정 패널 -->
-  <div class="widget-settings" id="dash-ws-panel">
-    <div style="font-size:13px;font-weight:700;color:var(--text)">보고 싶은 위젯 선택</div>
-    <div class="ws-grid" id="ws-grid"></div>
+  <div id="ws-panel" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:14px">
+    <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px">보고 싶은 위젯을 선택하세요</div>
+    <div id="ws-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px"></div>
     <div style="margin-top:10px;display:flex;gap:6px">
-      <button class="btn btn-sm btn-primary" onclick="wsSelectAll()">전체 선택</button>
-      <button class="btn btn-sm" onclick="wsSelectNone()">전체 해제</button>
+      <button class="btn btn-sm btn-primary" onclick="wsAll()">전체 선택</button>
+      <button class="btn btn-sm" onclick="wsNone()">전체 해제</button>
     </div>
   </div>
-  <div id="w-cost" class="dash-section">
+
+  <!-- ① 월 비용 한눈에 보기 -->
+  <div class="dash-section">
     <div class="dash-section-title">
       <span>💰 월 비용 현황</span>
-      <span class="dash-section-sub">전체 항목 합산 (필터 적용됨)</span>
+      <span class="dash-section-sub">전체 항목 합산</span>
     </div>
     <div class="cost-total-card" id="cost-total-card"></div>
     <div class="cost-grid" id="cost-grid"></div>
   </div>
 
+  <!-- ② 항목별 요약 -->
   <div class="dash-section">
     <div class="dash-section-title">
       <span>📋 항목별 요약</span>
       <span class="dash-section-sub">건수 · 비용 · 만료현황 · 구분별 현황</span>
     </div>
-    <div id="w-summary-lease"><div id="summary-lease" class="summary-card"></div></div>
-    <div id="w-summary-ins"><div id="summary-ins" class="summary-card"></div></div>
-    <div id="w-summary-veh"><div id="summary-veh" class="summary-card"></div></div>
-    <div id="w-summary-oa"><div id="summary-oa" class="summary-card"></div></div>
-    <div id="w-summary-other"><div id="summary-other" class="summary-card"></div></div>
+    <div id="wg-cost-card"></div>
+    <div id="wg-lease"><div id="summary-lease" class="summary-card"></div></div>
+    <div id="wg-ins"><div id="summary-ins" class="summary-card"></div></div>
+    <div id="wg-veh"><div id="summary-veh" class="summary-card"></div></div>
+    <div id="wg-oa"><div id="summary-oa" class="summary-card"></div></div>
+    <div id="wg-other"><div id="summary-other" class="summary-card"></div></div>
   </div>
 </div>
 
@@ -410,14 +382,12 @@ input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:var(--bl
       <option>본사</option><option>강북영업본부</option><option>강남영업본부</option><option>강서영업본부</option><option>동부영업본부</option><option>서부영업본부</option><option>영업센터</option><option>물류센터</option><option>사택</option>
     </select>
     <select class="fil" id="f-lease-ym" onchange="renderT('lease')"><option value="">전체 기준월</option></select>
-    <button class="btn" id="dfp-btn-lease" onclick="toggleDFP('lease')" title="대시보드 표시 필터">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>대시보드 필터
-    </button>
+    <button class="btn" id="dfp-btn-lease" onclick="toggleDFP('lease')" style="font-size:12px">📊 대시보드 필터</button>
     <button class="btn btn-red" id="del-btn-lease" style="display:none" onclick="bulkDel('lease')">선택 삭제 (0)</button>
     <button class="btn btn-green" onclick="openUpload('lease')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>엑셀 업로드</button>
     <button class="btn" onclick="dlTpl('lease')">서식 다운로드</button>
   </div>
-  <div class="dash-filter-panel" id="dfp-lease"></div>
+  <div id="dfp-lease" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:10px"></div>
   <div class="card"><div class="resize-wrap"><table class="rtable" id="t-lease"></table></div></div>
 </div>
 
@@ -425,12 +395,12 @@ input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:var(--bl
   <div class="toolbar">
     <input class="search" id="s-ins" placeholder="검색..." oninput="renderT('ins')">
     <select class="fil" id="f-ins-ym" onchange="renderT('ins')"><option value="">전체 기준월</option></select>
-    <button class="btn" id="dfp-btn-ins" onclick="toggleDFP('ins')" title="대시보드 표시 필터"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>대시보드 필터</button>
+    <button class="btn" id="dfp-btn-ins" onclick="toggleDFP('ins')" style="font-size:12px">📊 대시보드 필터</button>
     <button class="btn btn-red" id="del-btn-ins" style="display:none" onclick="bulkDel('ins')">선택 삭제 (0)</button>
     <button class="btn btn-green" onclick="openUpload('ins')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>엑셀 업로드</button>
     <button class="btn" onclick="dlTpl('ins')">서식 다운로드</button>
   </div>
-  <div class="dash-filter-panel" id="dfp-ins"></div>
+  <div id="dfp-ins" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:10px"></div>
   <div class="card"><div class="resize-wrap"><table class="rtable" id="t-ins"></table></div></div>
 </div>
 
@@ -441,12 +411,12 @@ input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:var(--bl
       <option value="">전체 구분</option><option>임원용</option><option>본사공용</option><option>본부및지사</option><option>도매센터</option><option>법인센터</option><option>프론티어</option>
     </select>
     <select class="fil" id="f-veh-ym" onchange="renderT('veh')"><option value="">전체 기준월</option></select>
-    <button class="btn" id="dfp-btn-veh" onclick="toggleDFP('veh')" title="대시보드 표시 필터"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>대시보드 필터</button>
+    <button class="btn" id="dfp-btn-veh" onclick="toggleDFP('veh')" style="font-size:12px">📊 대시보드 필터</button>
     <button class="btn btn-red" id="del-btn-veh" style="display:none" onclick="bulkDel('veh')">선택 삭제 (0)</button>
     <button class="btn btn-green" onclick="openUpload('veh')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>엑셀 업로드</button>
     <button class="btn" onclick="dlTpl('veh')">서식 다운로드</button>
   </div>
-  <div class="dash-filter-panel" id="dfp-veh"></div>
+  <div id="dfp-veh" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:10px"></div>
   <div class="card"><div class="resize-wrap"><table class="rtable" id="t-veh"></table></div></div>
 </div>
 
@@ -454,12 +424,12 @@ input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:var(--bl
   <div class="toolbar">
     <input class="search" id="s-oa" placeholder="검색..." oninput="renderT('oa')">
     <select class="fil" id="f-oa-ym" onchange="renderT('oa')"><option value="">전체 기준월</option></select>
-    <button class="btn" id="dfp-btn-oa" onclick="toggleDFP('oa')" title="대시보드 표시 필터"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>대시보드 필터</button>
+    <button class="btn" id="dfp-btn-oa" onclick="toggleDFP('oa')" style="font-size:12px">📊 대시보드 필터</button>
     <button class="btn btn-red" id="del-btn-oa" style="display:none" onclick="bulkDel('oa')">선택 삭제 (0)</button>
     <button class="btn btn-green" onclick="openUpload('oa')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>엑셀 업로드</button>
     <button class="btn" onclick="dlTpl('oa')">서식 다운로드</button>
   </div>
-  <div class="dash-filter-panel" id="dfp-oa"></div>
+  <div id="dfp-oa" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:10px"></div>
   <div class="card"><div class="resize-wrap"><table class="rtable" id="t-oa"></table></div></div>
 </div>
 
@@ -470,12 +440,12 @@ input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:var(--bl
       <option value="">전체 구분</option><option>정수기</option><option>비데</option><option>공기청정기</option>
     </select>
     <select class="fil" id="f-other-ym" onchange="renderT('other')"><option value="">전체 기준월</option></select>
+    <button class="btn" id="dfp-btn-other" onclick="toggleDFP('other')" style="font-size:12px">📊 대시보드 필터</button>
     <button class="btn btn-red" id="del-btn-other" style="display:none" onclick="bulkDel('other')">선택 삭제 (0)</button>
     <button class="btn btn-green" onclick="openUpload('other')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>엑셀 업로드</button>
-    <button class="btn" id="dfp-btn-other" onclick="toggleDFP('other')" title="대시보드 표시 필터"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>대시보드 필터</button>
     <button class="btn" onclick="dlTpl('other')">서식 다운로드</button>
   </div>
-  <div class="dash-filter-panel" id="dfp-other"></div>
+  <div id="dfp-other" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:10px"></div>
   <div class="card"><div class="resize-wrap"><table class="rtable" id="t-other"></table></div></div>
 </div>
 
@@ -550,20 +520,20 @@ input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:var(--bl
   </div>
 </div>
 
-<!-- 세부 내역 팝업 (보기 + 수정) -->
+<!-- 세부 내역 팝업 -->
 <div class="overlay" id="detail-modal" onclick="if(event.target===this)closeDetail()">
   <div class="modal" style="max-width:660px">
     <div class="mhead">
       <div class="mtitle" id="detail-title">세부 내역</div>
-      <div style="display:flex;align-items:center;gap:6px">
-        <button class="btn btn-sm" id="detail-edit-btn" onclick="toggleEditMode()">✏️ 수정</button>
+      <div style="display:flex;gap:6px;align-items:center">
+        <button class="btn btn-sm" id="detail-edit-btn" onclick="toggleEditMode()" style="display:none">✏️ 수정</button>
         <button class="btn btn-sm" onclick="closeDetail()">✕</button>
       </div>
     </div>
-    <div id="detail-body"></div>
+    <div id="detail-body" style="max-height:60vh;overflow-y:auto"></div>
     <div class="mfooter">
       <button class="btn" onclick="closeDetail()">닫기</button>
-      <button class="btn btn-primary" id="detail-save-btn" style="display:none" onclick="saveDetail()">저장</button>
+      <button class="btn btn-primary" id="detail-save-btn" style="display:none" onclick="saveDetail()">💾 저장</button>
     </div>
   </div>
 </div>
@@ -616,198 +586,6 @@ window.addEventListener('load', function(){
 });
 
 function getDB(){ return db; }
-
-// ============================================================
-// ① 위젯 설정
-// ============================================================
-const WIDGET_DEFS=[
-  {id:'w-cost',label:'월 비용 현황',desc:'항목별 월 지출 카드'},
-  {id:'w-summary-lease',label:'임대차 요약',desc:'건수·비용·구분·만료'},
-  {id:'w-summary-ins',label:'보험계약 요약',desc:'건수·비용·만료'},
-  {id:'w-summary-veh',label:'차량 요약',desc:'건수·비용·구분·만료'},
-  {id:'w-summary-oa',label:'OA렌탈 요약',desc:'건수·비용·구분'},
-  {id:'w-summary-other',label:'기타렌탈 요약',desc:'건수·비용·구분'},
-];
-let visWidgets=JSON.parse(localStorage.getItem('dashWidgets')||'null')||WIDGET_DEFS.map(w=>w.id);
-
-function saveWidgets(){localStorage.setItem('dashWidgets',JSON.stringify(visWidgets));}
-function applyWidgets(){
-  WIDGET_DEFS.forEach(w=>{
-    const el=document.getElementById(w.id);
-    if(el) el.style.display=visWidgets.includes(w.id)?'block':'none';
-  });
-}
-function toggleDashWS(){
-  const p=document.getElementById('dash-ws-panel');
-  const btn=document.getElementById('dash-ws-btn');
-  const open=p.classList.toggle('open');
-  btn.style.background=open?'var(--blue-bg)':'';
-  btn.style.color=open?'var(--blue)':'';
-  if(open) renderWSGrid();
-}
-function renderWSGrid(){
-  document.getElementById('ws-grid').innerHTML=WIDGET_DEFS.map(w=>{
-    const on=visWidgets.includes(w.id);
-    return `<div class="ws-item${on?' on':''}" onclick="toggleWidget('${w.id}')">
-      <div class="ws-chk">${on?'✓':''}</div>
-      <div><div class="ws-label">${w.label}</div><div style="font-size:11px;color:var(--muted)">${w.desc}</div></div>
-    </div>`;
-  }).join('');
-}
-function toggleWidget(id){
-  visWidgets=visWidgets.includes(id)?visWidgets.filter(v=>v!==id):[...visWidgets,id];
-  saveWidgets();applyWidgets();renderWSGrid();
-}
-function wsSelectAll(){visWidgets=WIDGET_DEFS.map(w=>w.id);saveWidgets();applyWidgets();renderWSGrid();}
-function wsSelectNone(){visWidgets=[];saveWidgets();applyWidgets();renderWSGrid();}
-
-// ============================================================
-// ② 대시보드 필터
-// ============================================================
-// 각 탭의 대시보드 표시 필터 (null=전체, 배열=선택된 값들)
-const DASH_FILTERS={lease:null,ins:null,veh:null,oa:null,other:null};
-// 필터 기준 필드
-const DFP_KEY={lease:'cat',ins:'ins_type',veh:'cat',oa:'item',other:'cat'};
-// 필터 선택지
-const DFP_OPTS={
-  lease:['본사','강북영업본부','강남영업본부','강서영업본부','동부영업본부','서부영업본부','영업센터','물류센터','사택'],
-  ins:['임원배상책임보험','임직원 단체상해보험','재산종합보험(화재보험)','기타'],
-  veh:['임원용','본사공용','본부및지사','도매센터','법인센터','프론티어'],
-  oa:['PC본체','노트북','프린터(컬러)','대형복합기','플로터','기타'],
-  other:['정수기','비데','공기청정기','기타']
-};
-
-function toggleDFP(t){
-  const panel=document.getElementById('dfp-'+t);
-  const btn=document.getElementById('dfp-btn-'+t);
-  if(!panel)return;
-  const open=panel.classList.toggle('open');
-  btn.style.background=open?'var(--blue-bg)':'';
-  btn.style.color=open?'var(--blue)':'';
-  if(open) renderDFP(t);
-}
-function renderDFP(t){
-  const panel=document.getElementById('dfp-'+t);
-  if(!panel)return;
-  const opts=DFP_OPTS[t]||[];
-  const sel=DASH_FILTERS[t]; // null=전체
-  const chips=opts.map(o=>{
-    const on=(sel===null||sel.includes(o));
-    return `<div class="dfp-chip${on?' on':''}" onclick="toggleDFPItem('${t}','${o}')">${o}</div>`;
-  }).join('');
-  panel.innerHTML=`
-    <div class="dfp-title">📊 대시보드에 표시할 항목 선택 (기본값: 전체)</div>
-    <div class="dfp-chips">${chips}</div>
-    <div class="dfp-actions">
-      <button class="btn btn-sm btn-primary" onclick="dfpAll('${t}')">전체 선택</button>
-      <button class="btn btn-sm" onclick="dfpNone('${t}')">전체 해제</button>
-      <button class="btn btn-sm btn-green" onclick="renderDash();toast('대시보드 업데이트됨','ok')">대시보드 적용</button>
-    </div>`;
-}
-function toggleDFPItem(t,val){
-  const opts=DFP_OPTS[t]||[];
-  let sel=DASH_FILTERS[t];
-  if(sel===null) sel=[...opts]; // null이면 전체에서 시작
-  if(sel.includes(val)) sel=sel.filter(v=>v!==val);
-  else sel=[...sel,val];
-  // 전체 선택이면 null로 초기화
-  DASH_FILTERS[t]=(sel.length===opts.length)?null:sel;
-  renderDFP(t);
-}
-function dfpAll(t){DASH_FILTERS[t]=null;renderDFP(t);}
-function dfpNone(t){DASH_FILTERS[t]=[];renderDFP(t);}
-
-// 필터 적용된 데이터 반환
-function getFilteredR(t){
-  const rows=getR(t);
-  const sel=DASH_FILTERS[t];
-  if(sel===null) return rows; // 전체
-  const key=DFP_KEY[t];
-  return rows.filter(r=>sel.includes(r[key]));
-}
-
-// ============================================================
-// ③ 세부 팝업 수정 기능
-// ============================================================
-let _detailTab=null, _detailRow=null, _editMode=false;
-
-function toggleEditMode(){
-  _editMode=!_editMode;
-  const btn=document.getElementById('detail-edit-btn');
-  const saveBtn=document.getElementById('detail-save-btn');
-  btn.textContent=_editMode?'👁 보기':'✏️ 수정';
-  btn.style.background=_editMode?'var(--blue-bg)':'';
-  btn.style.color=_editMode?'var(--blue)':'';
-  saveBtn.style.display=_editMode?'inline-flex':'none';
-  renderDetailBody(_detailTab,_detailRow,_editMode);
-}
-
-function renderDetailBody(t,r,editMode){
-  const sc=SCHEMAS[t];
-  const fd=FORM_DEF[t]||[];
-  const b=r.end_date?stb(r.end_date):null;
-  let html='<div class="detail-grid">';
-
-  if(editMode){
-    // 수정 모드: 폼 필드
-    fd.forEach(c=>{
-      if(c.k==='snapshot_ym') return; // 기준월은 수정 불가
-      let field='';
-      if(c.sel){
-        field=`<select id="ef-${c.k}"><option value="">선택하세요</option>${c.sel.map(s=>`<option${r[c.k]===s?' selected':''}>${s}</option>`).join('')}</select>`;
-      } else if(c.full&&!c.dt){
-        field=`<textarea id="ef-${c.k}" rows="2" style="resize:vertical">${r[c.k]||''}</textarea>`;
-      } else {
-        field=`<input type="${c.dt?'date':'text'}" id="ef-${c.k}" value="${(r[c.k]||'').replace(/"/g,'&quot;')}">`;
-      }
-      html+=`<div class="detail-edit-row"><div class="de-label">${c.l}${c.req?' *':''}</div><div class="de-val">${field}</div></div>`;
-    });
-    // 기준월은 읽기전용으로 표시
-    html+=`<div class="detail-edit-row"><div class="de-label">기준월</div><div class="de-val ro" style="color:var(--muted)">${r.snapshot_ym||'—'}</div></div>`;
-  } else {
-    // 보기 모드
-    sc.cols.filter(c=>!c.k.startsWith('_')).forEach(c=>{
-      let val=r[c.k]??'';
-      if(c.num) val=val?Number(val).toLocaleString()+'원':'';
-      html+=`<div class="detail-edit-row"><div class="de-label">${c.l}</div><div class="de-val ro">${val||'—'}</div></div>`;
-    });
-    if(t==='lease'){
-      html+=`<div class="detail-edit-row" style="background:var(--blue-bg)"><div class="de-label" style="background:transparent;color:var(--blue)">임차료+관리비 합계</div><div class="de-val ro hl">${calcLeaseSumTxt(r)}</div></div>`;
-    }
-    if(b){
-      html+=`<div class="detail-edit-row"><div class="de-label">계약 상태</div><div class="de-val ro"><span class="badge ${b.c}">${b.t}</span></div></div>`;
-    }
-  }
-  html+='</div>';
-  document.getElementById('detail-body').innerHTML=html;
-}
-
-async function saveDetail(){
-  if(!_detailTab||!_detailRow)return;
-  const fd=FORM_DEF[_detailTab]||[];
-  const updates={};
-  let valid=true;
-  fd.forEach(c=>{
-    if(c.k==='snapshot_ym') return;
-    const el=document.getElementById('ef-'+c.k);
-    if(!el)return;
-    const v=el.value.trim();
-    updates[c.k]=v||null;
-    if(c.req&&!v){el.style.borderColor='var(--red)';valid=false;}
-    else if(el.style) el.style.borderColor='';
-  });
-  if(!valid){toast('* 필수 항목을 입력해 주세요','err');return;}
-  const saveBtn=document.getElementById('detail-save-btn');
-  saveBtn.disabled=true;showL('저장 중...');
-  try{
-    const{error}=await db.from(TAB_TBL[_detailTab]).update(updates).eq('id',_detailRow.id);
-    if(error)throw error;
-    toast('저장됐습니다','ok');
-    closeDetail();
-    await loadAll();
-  }catch(e){toast('저장 실패: '+(e.message||e),'err');}
-  saveBtn.disabled=false;hideL();
-}
 
 // ============================================================
 // 로그인 / 인증
@@ -909,6 +687,40 @@ let curTab='dash',addType='lease',upType='',upData=[];
 const charts={};
 let resizeState=null;
 function curYM(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;}
+
+// ============================================================
+// 위젯 설정
+// ============================================================
+const WIDGET_DEF=[
+  {id:'w-kpi',label:'KPI 요약 카드',desc:'전체건수·월지출·상태'},
+  {id:'w-status',label:'계약 상태 도넛',desc:'정상·임박·만료'},
+  {id:'w-veh',label:'차량 구분 도넛',desc:'6개 구분 보유대수'},
+  {id:'w-cost',label:'카테고리별 월 비용',desc:'막대 차트'},
+  {id:'w-lease-chart',label:'임대차 구분별 임차료',desc:'본부별 막대'},
+  {id:'w-summary',label:'카테고리 요약',desc:'건수·상태·만료예정'},
+  {id:'w-trend',label:'월별 추이',desc:'비용·건수 추이'},
+];
+const CHART_WS=['w-status','w-veh','w-cost','w-lease-chart'];
+function loadWS(){const s=localStorage.getItem('assetW8');return s?JSON.parse(s):WIDGET_DEF.map(w=>w.id);}
+function saveWS(l){localStorage.setItem('assetW8',JSON.stringify(l));}
+let visW=loadWS();
+function renderWSPanel(){
+  document.getElementById('ws-grid').innerHTML=WIDGET_DEF.map(w=>{const on=visW.includes(w.id);return `<div class="ws-item${on?' active':''}" onclick="toggleW('${w.id}')"><div class="ws-check">${on?'✓':''}</div><div><div class="ws-label">${w.label}</div><div class="ws-desc">${w.desc}</div></div></div>`;}).join('');
+}
+function toggleW(id){visW=visW.includes(id)?visW.filter(v=>v!==id):[...visW,id];saveWS(visW);applyWS();renderWSPanel();}
+function wsAll(){visW=WIDGET_DEF.map(w=>w.id);saveWS(visW);applyWS();renderWSPanel();}
+function wsNone(){visW=[];saveWS(visW);applyWS();renderWSPanel();}
+function applyWS(){
+  document.getElementById('w-kpi').style.display=visW.includes('w-kpi')?'block':'none';
+  CHART_WS.forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=visW.includes(id)?'':'none';});
+  document.getElementById('w-summary').style.display=visW.includes('w-summary')?'block':'none';
+  document.getElementById('w-trend').style.display=visW.includes('w-trend')?'block':'none';
+}
+function toggleWS(){
+  const p=document.getElementById('ws-panel');const btn=document.getElementById('ws-toggle-btn');
+  const o=p.classList.toggle('open');btn.style.background=o?'var(--blue-bg)':'';btn.style.color=o?'var(--blue)':'';
+  if(o)renderWSPanel();
+}
 
 // ============================================================
 // 스키마 정의
@@ -1272,28 +1084,196 @@ function startResize(e,t,ci){
 // ============================================================
 // 행 클릭 → 세부 팝업
 // ============================================================
+let _dTab=null,_dRow=null,_dEdit=false;
+
 function handleRowClick(e,t,id){
   if(e.target.tagName==='INPUT'||e.target.tagName==='BUTTON')return;
   const r=getR(t).find(row=>row.id===id);if(!r)return;
   openDetail(t,r);
 }
 function openDetail(t,r){
-  _detailTab=t;_detailRow=r;_editMode=false;
+  _dTab=t;_dRow=r;_dEdit=false;
   const sc=SCHEMAS[t];
   document.getElementById('detail-title').textContent=sc.label+' 세부 내역';
-  document.getElementById('detail-edit-btn').textContent='✏️ 수정';
-  document.getElementById('detail-edit-btn').style.background='';
-  document.getElementById('detail-edit-btn').style.color='';
-  document.getElementById('detail-save-btn').style.display='none';
-  // 세부현황 탭은 수정 버튼 숨김
+  const editBtn=document.getElementById('detail-edit-btn');
+  const saveBtn=document.getElementById('detail-save-btn');
   const noEdit=['dveh','dpc','dprinter','dplotter'];
-  document.getElementById('detail-edit-btn').style.display=noEdit.includes(t)?'none':'';
-  renderDetailBody(t,r,false);
+  editBtn.style.display=noEdit.includes(t)?'none':'inline-flex';
+  editBtn.textContent='✏️ 수정';
+  editBtn.style.background='';editBtn.style.color='';
+  saveBtn.style.display='none';
+  buildDetailView(t,r,false);
   document.getElementById('detail-modal').classList.add('open');
+}
+function buildDetailView(t,r,editMode){
+  const sc=SCHEMAS[t];
+  const fd=FORM_DEF[t]||[];
+  const b=r.end_date?stb(r.end_date):null;
+  const S=`<div style="border:1px solid var(--border);border-radius:var(--rs);overflow:hidden">`;
+  const E=`</div>`;
+  const row=(label,val,cls='')=>`<div style="display:flex;border-bottom:1px solid var(--border)"><div style="font-size:11px;font-weight:700;color:var(--muted);background:var(--subtle);padding:10px 12px;min-width:130px;flex-shrink:0;border-right:1px solid var(--border);display:flex;align-items:center">${label}</div><div style="padding:${editMode?'7px':'10px'} 12px;flex:1;font-size:13px;${cls}">${val}</div></div>`;
+  let html=S;
+  if(editMode){
+    fd.forEach(c=>{
+      if(c.k==='snapshot_ym')return;
+      let inp='';
+      const v=(r[c.k]||'').toString().replace(/"/g,'&quot;');
+      if(c.sel) inp=`<select id="ef-${c.k}" style="width:100%;padding:6px 9px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit"><option value="">선택</option>${c.sel.map(s=>`<option${r[c.k]===s?' selected':''}>${s}</option>`).join('')}</select>`;
+      else if(c.full&&!c.dt) inp=`<textarea id="ef-${c.k}" rows="2" style="width:100%;padding:6px 9px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit;resize:vertical">${r[c.k]||''}</textarea>`;
+      else inp=`<input type="${c.dt?'date':'text'}" id="ef-${c.k}" value="${v}" style="width:100%;padding:6px 9px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit">`;
+      html+=row(c.l+(c.req?' *':''),inp);
+    });
+    html+=row('기준월',`<span style="color:var(--muted)">${r.snapshot_ym||'—'}</span>`);
+  } else {
+    sc.cols.filter(cc=>!cc.k.startsWith('_')).forEach(cc=>{
+      let val=r[cc.k]??'';
+      if(cc.num)val=val?Number(val).toLocaleString()+'원':'';
+      html+=row(cc.l,val||'—');
+    });
+    if(t==='lease') html+=row('임차료+관리비 합계',calcLeaseSumTxt(r),'color:#0c6c9a;font-weight:700');
+    if(b) html+=row('계약 상태',`<span class="badge ${b.c}">${b.t}</span>`);
+  }
+  html+=E;
+  document.getElementById('detail-body').innerHTML=html;
+}
+function toggleEditMode(){
+  _dEdit=!_dEdit;
+  const editBtn=document.getElementById('detail-edit-btn');
+  const saveBtn=document.getElementById('detail-save-btn');
+  editBtn.textContent=_dEdit?'👁 보기':'✏️ 수정';
+  editBtn.style.background=_dEdit?'var(--blue-bg)':'';
+  editBtn.style.color=_dEdit?'var(--blue)':'';
+  saveBtn.style.display=_dEdit?'inline-flex':'none';
+  buildDetailView(_dTab,_dRow,_dEdit);
+}
+async function saveDetail(){
+  const fd=FORM_DEF[_dTab]||[];
+  const upd={};let valid=true;
+  fd.forEach(c=>{
+    if(c.k==='snapshot_ym')return;
+    const el=document.getElementById('ef-'+c.k);if(!el)return;
+    const v=el.value.trim();
+    upd[c.k]=v||null;
+    if(c.req&&!v){el.style.borderColor='var(--red)';valid=false;}
+    else if(el.style) el.style.borderColor='';
+  });
+  if(!valid){toast('* 필수 항목을 입력해 주세요','err');return;}
+  document.getElementById('detail-save-btn').disabled=true;
+  showL('저장 중...');
+  try{
+    const{error}=await db.from(TAB_TBL[_dTab]).update(upd).eq('id',_dRow.id);
+    if(error)throw error;
+    toast('저장됐습니다','ok');
+    closeDetail();
+    await loadAll();
+  }catch(e){toast('저장 실패: '+(e.message||e),'err');}
+  document.getElementById('detail-save-btn').disabled=false;
+  hideL();
 }
 function closeDetail(){
   document.getElementById('detail-modal').classList.remove('open');
-  _detailTab=null;_detailRow=null;_editMode=false;
+  _dTab=null;_dRow=null;_dEdit=false;
+}
+
+// ============================================================
+// ③ 위젯 설정
+// ============================================================
+const WG_DEFS=[
+  {id:'wg-cost-card',label:'💰 월 비용 현황',desc:'항목별 월 지출 카드'},
+  {id:'wg-lease',label:'🏢 임대차 요약',desc:'건수·비용·구분·만료'},
+  {id:'wg-ins',label:'🛡 보험계약 요약',desc:'건수·비용·만료'},
+  {id:'wg-veh',label:'🚗 차량 요약',desc:'건수·비용·구분·만료'},
+  {id:'wg-oa',label:'💻 OA렌탈 요약',desc:'건수·비용·구분'},
+  {id:'wg-other',label:'🏠 기타렌탈 요약',desc:'건수·비용·구분'},
+];
+let visWG=JSON.parse(localStorage.getItem('visWG14')||'null')||WG_DEFS.map(w=>w.id);
+function saveWG(){localStorage.setItem('visWG14',JSON.stringify(visWG));}
+function applyWG(){
+  WG_DEFS.forEach(w=>{
+    const el=document.getElementById(w.id);
+    if(el) el.style.display=visWG.includes(w.id)?'':'none';
+  });
+}
+function toggleWS(){
+  const p=document.getElementById('ws-panel');
+  const open=p.style.display==='none';
+  p.style.display=open?'block':'none';
+  document.getElementById('ws-btn').style.background=open?'var(--blue-bg)':'';
+  document.getElementById('ws-btn').style.color=open?'var(--blue)':'';
+  if(open) renderWG();
+}
+function renderWG(){
+  document.getElementById('ws-grid').innerHTML=WG_DEFS.map(w=>{
+    const on=visWG.includes(w.id);
+    return `<div onclick="toggleWG('${w.id}')" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:1.5px solid ${on?'var(--blue)':'var(--border)'};border-radius:var(--rs);cursor:pointer;background:${on?'var(--blue-bg)':'var(--surface)'};user-select:none">
+      <div style="width:16px;height:16px;border-radius:3px;border:1.5px solid ${on?'var(--blue)':'var(--border)'};background:${on?'var(--blue)':'transparent'};color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">${on?'✓':''}</div>
+      <div><div style="font-size:12px;font-weight:600;color:var(--text)">${w.label}</div><div style="font-size:11px;color:var(--muted)">${w.desc}</div></div>
+    </div>`;
+  }).join('');
+}
+function toggleWG(id){
+  visWG=visWG.includes(id)?visWG.filter(v=>v!==id):[...visWG,id];
+  saveWG();applyWG();renderWG();
+}
+function wsAll(){visWG=WG_DEFS.map(w=>w.id);saveWG();applyWG();renderWG();}
+function wsNone(){visWG=[];saveWG();applyWG();renderWG();}
+
+// ============================================================
+// ④ 대시보드 필터
+// ============================================================
+const DFP_OPTS={
+  lease:['본사','강북영업본부','강남영업본부','강서영업본부','동부영업본부','서부영업본부','영업센터','물류센터','사택'],
+  ins:['임원배상책임보험','임직원 단체상해보험','재산종합보험(화재보험)'],
+  veh:['임원용','본사공용','본부및지사','도매센터','법인센터','프론티어'],
+  oa:['PC본체','노트북','프린터(컬러)','대형복합기','플로터','기타'],
+  other:['정수기','비데','공기청정기','기타']
+};
+const DFP_KEY={lease:'cat',ins:'ins_type',veh:'cat',oa:'item',other:'cat'};
+// null = 전체, 배열 = 선택된 값들
+const DASH_FILTERS={lease:null,ins:null,veh:null,oa:null,other:null};
+
+function toggleDFP(t){
+  const p=document.getElementById('dfp-'+t);
+  const b=document.getElementById('dfp-btn-'+t);
+  if(!p)return;
+  const open=p.style.display==='none';
+  p.style.display=open?'block':'none';
+  if(b){b.style.background=open?'var(--blue-bg)':'';b.style.color=open?'var(--blue)':'';}
+  if(open) renderDFP(t);
+}
+function renderDFP(t){
+  const p=document.getElementById('dfp-'+t);if(!p)return;
+  const opts=DFP_OPTS[t]||[];
+  const sel=DASH_FILTERS[t];
+  const chips=opts.map(o=>{
+    const on=(sel===null||sel.includes(o));
+    return `<span onclick="toggleDFPItem('${t}','${o}')" style="display:inline-block;padding:4px 12px;border-radius:20px;border:1.5px solid ${on?'var(--blue)':'var(--border)'};background:${on?'var(--blue)':'var(--surface)'};color:${on?'#fff':'var(--text)'};font-size:12px;font-weight:500;cursor:pointer;margin:3px">${o}</span>`;
+  }).join('');
+  p.innerHTML=`<div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px">📊 대시보드에 표시할 항목 선택 (기본: 전체)</div>
+    <div>${chips}</div>
+    <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
+      <button class="btn btn-sm btn-primary" onclick="dfpAll('${t}')">전체 선택</button>
+      <button class="btn btn-sm" onclick="dfpNone('${t}')">전체 해제</button>
+      <button class="btn btn-sm btn-green" onclick="renderDash();toast('대시보드 업데이트','ok')">✅ 대시보드 적용</button>
+    </div>`;
+}
+function toggleDFPItem(t,val){
+  const opts=DFP_OPTS[t]||[];
+  let sel=DASH_FILTERS[t];
+  if(sel===null) sel=[...opts];
+  if(sel.includes(val)) sel=sel.filter(v=>v!==val);
+  else sel=[...sel,val];
+  DASH_FILTERS[t]=(sel.length===opts.length)?null:sel;
+  renderDFP(t);
+}
+function dfpAll(t){DASH_FILTERS[t]=null;renderDFP(t);}
+function dfpNone(t){DASH_FILTERS[t]=[];renderDFP(t);}
+function getFilteredR(t){
+  const rows=getR(t);
+  const sel=DASH_FILTERS[t];
+  if(sel===null)return rows;
+  const key=DFP_KEY[t];
+  return rows.filter(r=>sel.includes(r[key]));
 }
 
 // ============================================================
@@ -1326,29 +1306,27 @@ async function singleDel(t,id){
 // 대시보드
 // ============================================================
 function renderDash(){
-  // 필터 적용된 데이터 사용
-  const fLease=getFilteredR('lease');
-  const fIns=getFilteredR('ins');
-  const fVeh=getFilteredR('veh');
-  const fOa=getFilteredR('oa');
-  const fOther=getFilteredR('other');
+  // 필터 적용된 데이터
+  const fL=getFilteredR('lease');
+  const fI=getFilteredR('ins');
+  const fV=getFilteredR('veh');
+  const fO=getFilteredR('oa');
+  const fR=getFilteredR('other');
 
-  const lM=fLease.reduce((s,r)=>s+Number(r.rent||0),0);
-  const iM=fIns.reduce((s,r)=>s+Number(r.amount||0),0);
-  const vM=fVeh.reduce((s,r)=>s+Number(r.monthly_fee||0),0);
-  const oM=fOa.reduce((s,r)=>s+Number(r.monthly_fee||0),0);
-  const rM=fOther.reduce((s,r)=>s+Number(r.monthly_fee||0),0);
+  const lM=fL.reduce((s,r)=>s+Number(r.rent||0),0);
+  const iM=fI.reduce((s,r)=>s+Number(r.amount||0),0);
+  const vM=fV.reduce((s,r)=>s+Number(r.monthly_fee||0),0);
+  const oM=fO.reduce((s,r)=>s+Number(r.monthly_fee||0),0);
+  const rM=fR.reduce((s,r)=>s+Number(r.monthly_fee||0),0);
   const tM=lM+iM+vM+oM+rM;
-  const totalCnt=fLease.length+fIns.length+fVeh.length+fOa.length+fOther.length;
-
-  // 필터 적용 여부 표시
+  const totalCnt=fL.length+fI.length+fV.length+fO.length+fR.length;
   const isFiltered=Object.values(DASH_FILTERS).some(v=>v!==null);
-  const filterNote=isFiltered?' <span class="badge warn" style="font-size:10px">필터적용중</span>':'';
 
-  // 월 비용 합계 카드
-  document.getElementById('cost-total-card').innerHTML=`
+  // 월 비용 합계 + 카드
+  const costCardEl=document.getElementById('cost-total-card');
+  if(costCardEl) costCardEl.innerHTML=`
     <div>
-      <div class="cost-total-label">전체 월 지출 합계${filterNote}</div>
+      <div class="cost-total-label">전체 월 지출 합계${isFiltered?' <span style="background:rgba(255,255,255,.25);border-radius:4px;padding:2px 6px;font-size:11px">필터적용중</span>':''}</div>
       <div class="cost-total-val">${toMan(tM).toLocaleString()}<span class="cost-total-unit">만원</span></div>
       <div class="cost-total-sub">총 ${totalCnt.toLocaleString()}건 · 5개 항목</div>
     </div>
@@ -1360,36 +1338,23 @@ function renderDash(){
       <div class="cost-total-badge">기타 ${toMan(rM).toLocaleString()}만</div>
     </div>`;
 
-  // 항목별 월 비용 카드
-  const costItems=[
-    {label:'임대차',mon:lM,cnt:fLease.length,color:'#1a73e8',sub:'임차료 기준'},
-    {label:'보험계약',mon:iM,cnt:fIns.length,color:'#188038',sub:'월 환산'},
-    {label:'차량',mon:vM,cnt:fVeh.length,color:'#e37400',sub:'월 대여료'},
-    {label:'OA렌탈',mon:oM,cnt:fOa.length,color:'#6200ea',sub:'월 렌탈료'},
-    {label:'기타렌탈',mon:rM,cnt:fOther.length,color:'#d32f2f',sub:'월 렌탈료'},
-  ];
-  document.getElementById('cost-grid').innerHTML=costItems.map(it=>`
-    <div class="cost-item">
-      <div class="cost-item-bar" style="background:${it.color}"></div>
-      <div class="cost-item-label">${it.label}</div>
-      <div class="cost-item-val">${toMan(it.mon).toLocaleString()}<span class="cost-item-unit">만원</span></div>
-      <div class="cost-item-sub">${it.cnt}건 · ${it.sub}</div>
-    </div>`).join('');
+  const costGridEl=document.getElementById('cost-grid');
+  if(costGridEl) costGridEl.innerHTML=[
+    {label:'임대차',mon:lM,cnt:fL.length,color:'#1a73e8',sub:'임차료'},
+    {label:'보험계약',mon:iM,cnt:fI.length,color:'#188038',sub:'보험료'},
+    {label:'차량',mon:vM,cnt:fV.length,color:'#e37400',sub:'월대여료'},
+    {label:'OA렌탈',mon:oM,cnt:fO.length,color:'#6200ea',sub:'렌탈료'},
+    {label:'기타렌탈',mon:rM,cnt:fR.length,color:'#d32f2f',sub:'렌탈료'},
+  ].map(it=>`<div class="cost-item"><div class="cost-item-bar" style="background:${it.color}"></div><div class="cost-item-label">${it.label}</div><div class="cost-item-val">${toMan(it.mon).toLocaleString()}<span class="cost-item-unit">만원</span></div><div class="cost-item-sub">${it.cnt}건 · ${it.sub}</div></div>`).join('');
 
-  // 항목별 요약 카드
-  renderSummaryCard('lease','임대차','#1a73e8',fLease,lM,
-    r=>r.cat,DFP_OPTS.lease,r=>Number(r.rent||0),'임차료');
-  renderSummaryCard('ins','보험계약','#188038',fIns,iM,
-    r=>r.ins_type,DFP_OPTS.ins,r=>Number(r.amount||0),'보험료');
-  renderSummaryCard('veh','차량','#e37400',fVeh,vM,
-    r=>r.cat,DFP_OPTS.veh,r=>Number(r.monthly_fee||0),'월대여료');
-  renderSummaryCard('oa','OA렌탈','#6200ea',fOa,oM,
-    r=>r.item,DFP_OPTS.oa,r=>Number(r.monthly_fee||0),'렌탈료');
-  renderSummaryCard('other','기타렌탈','#d32f2f',fOther,rM,
-    r=>r.cat,DFP_OPTS.other,r=>Number(r.monthly_fee||0),'렌탈료');
+  renderSummaryCard('lease','임대차','#1a73e8',fL,lM,r=>r.cat,DFP_OPTS.lease,r=>Number(r.rent||0),'임차료');
+  renderSummaryCard('ins','보험계약','#188038',fI,iM,r=>r.ins_type,DFP_OPTS.ins,r=>Number(r.amount||0),'보험료');
+  renderSummaryCard('veh','차량','#e37400',fV,vM,r=>r.cat,DFP_OPTS.veh,r=>Number(r.monthly_fee||0),'월대여료');
+  renderSummaryCard('oa','OA렌탈','#6200ea',fO,oM,r=>r.item,DFP_OPTS.oa,r=>Number(r.monthly_fee||0),'렌탈료');
+  renderSummaryCard('other','기타렌탈','#d32f2f',fR,rM,r=>r.cat,DFP_OPTS.other,r=>Number(r.monthly_fee||0),'렌탈료');
 
-  // 위젯 표시/숨김 적용
-  applyWidgets();
+  // 위젯 표시/숨김
+  applyWG();
 }
 
 function renderSummaryCard(id, label, color, rows, totalMon, catFn, cats, monFn, monLabel){
@@ -1450,6 +1415,34 @@ function renderSummaryCard(id, label, color, rows, totalMon, catFn, cats, monFn,
         }).join('')}
       `:''}
     </div>`;
+}
+function renderTrend(){
+  const allRows=[...DB.lease,...DB.insurance,...DB.vehicle,...DB.oa_rental,...DB.other_rental];
+  const months=[...new Set(allRows.map(r=>r.snapshot_ym).filter(Boolean))].sort();
+  if(!months.length){['trendCostChart','trendCountChart'].forEach(id=>{if(charts[id]){charts[id].destroy();delete charts[id];}});document.getElementById('trend-table').innerHTML='<tr><td style="padding:20px;color:var(--muted);text-align:center">기준월 데이터가 없습니다</td></tr>';return;}
+  const td=months.map(ym=>{
+    const lR=DB.lease.filter(r=>r.snapshot_ym===ym),vR=DB.vehicle.filter(r=>r.snapshot_ym===ym),oR=DB.oa_rental.filter(r=>r.snapshot_ym===ym),rR=DB.other_rental.filter(r=>r.snapshot_ym===ym),iR=DB.insurance.filter(r=>r.snapshot_ym===ym);
+    const lC=lR.reduce((s,r)=>s+Number(r.rent||0),0),vC=vR.reduce((s,r)=>s+Number(r.monthly_fee||0),0),oC=oR.reduce((s,r)=>s+Number(r.monthly_fee||0),0),rC=rR.reduce((s,r)=>s+Number(r.monthly_fee||0),0);
+    return{ym,totalCost:lC+vC+oC+rC,totalCount:lR.length+iR.length+vR.length+oR.length+rR.length,lC,vC,oC,rC};
+  });
+  mkChartLine('trendCostChart',months,[{label:'임대차',data:td.map(d=>toMan(d.lC)),color:'#1a73e8'},{label:'차량',data:td.map(d=>toMan(d.vC)),color:'#188038'},{label:'OA렌탈',data:td.map(d=>toMan(d.oC)),color:'#6200ea'},{label:'기타렌탈',data:td.map(d=>toMan(d.rC)),color:'#e37400'}]);
+  mkChart('trendCountChart','bar',months,td.map(d=>d.totalCount),months.map((_,i)=>i===months.length-1?'#1a73e8':'#b5d4f4'));
+  let h='<thead><tr><th>기준월</th><th>건수</th><th>임대차</th><th>차량</th><th>OA렌탈</th><th>기타렌탈</th><th>합계(만)</th><th>전월대비</th></tr></thead><tbody>';
+  td.slice().reverse().forEach((d,i,arr)=>{
+    const prev=arr[i+1];let diff='-';
+    if(prev){const v=toMan(d.totalCost)-toMan(prev.totalCost);const cls=v>0?'up':v<0?'dn':'eq';const s=v>0?'▲':v<0?'▼':'–';diff=`<span class="trend-diff ${cls}">${s}${Math.abs(v).toLocaleString()}만</span>`;}
+    h+=`<tr style="${i===0?'font-weight:600':''}"><td>${d.ym}${i===0?' <span class="badge info" style="font-size:10px">최신</span>':''}</td><td>${d.totalCount}</td><td>${toMan(d.lC).toLocaleString()}</td><td>${toMan(d.vC).toLocaleString()}</td><td>${toMan(d.oC).toLocaleString()}</td><td>${toMan(d.rC).toLocaleString()}</td><td>${toMan(d.totalCost).toLocaleString()}</td><td>${diff}</td></tr>`;
+  });
+  document.getElementById('trend-table').innerHTML=h+'</tbody>';
+}
+function mkChartLine(id,labels,datasets){
+  if(charts[id]){charts[id].destroy();delete charts[id];}
+  charts[id]=new Chart(document.getElementById(id),{type:'line',data:{labels,datasets:datasets.map(ds=>({label:ds.label,data:ds.data,borderColor:ds.color,backgroundColor:ds.color+'22',borderWidth:2,pointRadius:4,fill:false,tension:0.3}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'top',labels:{font:{size:11},boxWidth:12,padding:10}}},scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{grid:{color:'rgba(0,0,0,0.05)'},ticks:{callback:v=>v.toLocaleString()+'만',font:{size:11}}}}}});
+}
+function mkChart(id,type,labels,data,colors){
+  if(charts[id]){charts[id].destroy();delete charts[id];}
+  const isBar=type==='bar';
+  charts[id]=new Chart(document.getElementById(id),{type,data:{labels,datasets:[{data,backgroundColor:colors,borderRadius:isBar?4:0,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},...(isBar?{scales:{x:{grid:{display:false},ticks:{font:{size:11},maxRotation:35}},y:{grid:{color:'rgba(0,0,0,0.05)'},ticks:{callback:v=>v.toLocaleString()+'만',font:{size:11}}}}}:{cutout:'62%'})}});
 }
 
 // ============================================================
